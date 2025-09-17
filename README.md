@@ -1,80 +1,151 @@
-# connect-hub
+# ConnectHub Backend
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+O **ConnectHub Backend** é o núcleo servidor da plataforma ConnectHub, um ambiente colaborativo para integração de projetos acadêmicos, gamificação, comunicação e aprendizado. Construído com **Quarkus**, o framework Supersônico e Subatômico para Java, o sistema adota práticas modernas de arquitetura, incluindo DDD (Domain-Driven Design), e oferece uma API REST robusta e extensível.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+---
 
-## Running the application in dev mode
+## Índice
 
-You can run your application in dev mode that enables live coding using:
+- [Visão Geral do Projeto](#visão-geral-do-projeto)
+- [Arquitetura e Padrões](#arquitetura-e-padrões)
+  - [Domain-Driven Design (DDD)](#domain-driven-design-ddd)
+  - [Organização dos Pacotes](#organização-dos-pacotes)
+- [Principais Funcionalidades](#principais-funcionalidades)
+  - [Gestão de Projetos](#gestão-de-projetos)
+  - [Módulo Acadêmico](#módulo-acadêmico)
+  - [Gamificação](#gamificação)
+  - [Comunicação e Notificações](#comunicação-e-notificações)
+- [Tecnologias e Dependências](#tecnologias-e-dependências)
+- [Como Executar](#como-executar)
+- [Testes](#testes)
+- [Segurança e Autenticação](#segurança-e-autenticação)
+- [Referências e Guias](#referências-e-guias)
 
-```shell script
+---
+
+## Visão Geral do Projeto
+
+Este backend serve como base para recursos como publicação e comentários de projetos, fóruns acadêmicos (tópicos e respostas), gamificação (XP, níveis, conquistas), notificações e gerenciamento de usuários. É altamente modularizado, facilitando a manutenção e a evolução.
+
+---
+
+## Arquitetura e Padrões
+
+### Domain-Driven Design (DDD)
+
+O projeto segue o conceito de DDD para isolar responsabilidades e promover clareza de domínio. Os principais pacotes são:
+
+- `domain`: Entidades de negócio, enums e lógica de domínio.
+- `application`: Serviços de aplicação e lógica de orquestração.
+- `infrastructure`: Exceções, configurações e integrações externas.
+- `interfaces.rest`: Exposição de endpoints RESTful.
+
+### Organização dos Pacotes
+
+- `domain.project`: Modelos de Projeto e Comentários.
+- `domain.academic`: Entidades de Tópico e Resposta para fóruns.
+- `domain.gamification`: Tipos e lógica de XP (Experiência).
+- `application.user`: Serviços para manipulação de usuários.
+- `application.communication`: Serviços de notificação.
+- `infrastructure.exception`: Manipulação de erros.
+- `interfaces.rest`: Controladores REST para API pública.
+
+---
+
+## Principais Funcionalidades
+
+### Gestão de Projetos
+
+- Entidades como `Project` e `ProjectComment` permitem cadastro, visualização e comentários em projetos.
+- Enum `ProjectTechnologies` padroniza tecnologias relacionadas a projetos, incluindo Java, Python, Docker, frameworks JS etc.
+
+### Módulo Acadêmico
+
+- Entidades `Topic` e `Answer` suportam fóruns com tópicos, respostas, likes, dislikes e marcação de solução.
+- Sistema de XP para participação (criar tópicos, responder, melhor resposta).
+
+### Gamificação
+
+- Sistema de XP (`XpType`) e níveis.
+- Eventos planejados para evolução de nível do usuário.
+
+### Comunicação e Notificações
+
+- Serviço de notificações para eventos do sistema (criação, deleção, contagem).
+
+---
+
+## Tecnologias e Dependências
+
+Utiliza extensivamente as features do Quarkus, incluindo:
+
+- **Quarkus REST** ([guia](https://quarkus.io/guides/rest)): Endpoints reativos.
+- **Hibernate ORM com Panache** ([guia](https://quarkus.io/guides/hibernate-orm-panache)): ORM simplificado.
+- **Hibernate Validator** ([guia](https://quarkus.io/guides/validation)): Validação de dados.
+- **SmallRye OpenAPI** ([guia](https://quarkus.io/guides/openapi-swaggerui)): Documentação automática com Swagger UI.
+- **Jackson**: Serialização JSON.
+- **JDBC Driver - PostgreSQL** ([guia](https://quarkus.io/guides/datasource)): Driver JDBC para PostgreSQL.
+
+Outras dependências comuns do ecossistema Quarkus podem ser incluídas conforme necessidade.
+
+---
+
+## Como Executar
+
+### Ambiente de Desenvolvimento
+
+```shell
 ./mvnw quarkus:dev
 ```
+Acesse a Dev UI em [http://localhost:8080/q/dev/](http://localhost:8080/q/dev/).
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+### Build e Execução
 
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
+**Empacotamento padrão:**
+```shell
 ./mvnw package
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
+**Über-jar:**
+```shell
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
+java -jar target/*-runner.jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
+**Build Nativo:**
+```shell
 ./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
+# Ou com container:
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
+./target/connect-hub-1.0.0-SNAPSHOT-runner
 ```
 
-You can then execute your native executable with: `./target/connect-hub-1.0.0-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+## Testes
 
-## Related Guides
+Inclui testes automatizados de endpoints REST com Quarkus Test e RestAssured.
 
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- Hibernate Validator ([guide](https://quarkus.io/guides/validation)): Validate object properties (field, getter) and method parameters for your beans (REST, CDI, Jakarta Persistence)
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+---
 
-## Provided Code
+## Segurança e Autenticação
 
-### Hibernate ORM
+O código sugere a intenção de uso de hash de senhas (ex: BCrypt), mas há trechos comentados. Recomenda-se revisar e garantir a implementação de hashing seguro das senhas e autenticação via JWT ou OAuth2, conforme padrões Quarkus.
 
-Create your first JPA entity
+---
 
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
+## Referências e Guias
 
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
+- [Quarkus](https://quarkus.io/)
+- [Hibernate ORM Panache](https://quarkus.io/guides/hibernate-orm-panache)
+- [OpenAPI/Swagger](https://quarkus.io/guides/openapi-swaggerui)
+- [Quarkus REST](https://quarkus.io/guides/rest)
 
+---
 
-### REST
+## Contato
 
-Easily start your REST Web Services
+Para dúvidas, sugestões ou contribuir, abra uma issue ou pull request neste repositório.
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+---
