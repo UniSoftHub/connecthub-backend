@@ -1,5 +1,8 @@
 package br.com.hub.connect.domain.communication.model;
 
+import java.util.List;
+import java.util.Optional;
+
 import br.com.hub.connect.domain.communication.enums.NotificationType;
 import br.com.hub.connect.domain.shared.model.BaseEntity;
 import br.com.hub.connect.domain.user.model.User;
@@ -38,6 +41,21 @@ public class Notification extends BaseEntity {
   public String toString() {
     return String.format("Notification{id=%d, user_id=%d, type='%s', title='%s', read=%b}",
         id, user.id, type, title, read);
+  }
+
+  public static List<Notification> findAllActive(int page, int size) {
+    return find("isActive = true")
+        .page(page, size)
+        .list();
+  }
+
+  public static Optional<Notification> findActiveById(Long id) {
+    return find("id = ?1 and isActive = true", id)
+        .firstResultOptional();
+  }
+
+  public static long countActive() {
+    return count("isActive = true");
   }
 
 }
