@@ -1,7 +1,6 @@
 package br.com.hub.connect.domain.shared.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -27,7 +26,6 @@ public abstract class BaseEntity extends PanacheEntity {
   @Column(name = "excluded_at")
   public LocalDateTime excludedAt;
 
-  // Métodos genéricos
   public boolean isActive() {
     return Boolean.TRUE.equals(this.isActive);
   }
@@ -40,13 +38,4 @@ public abstract class BaseEntity extends PanacheEntity {
     this.excludedAt = LocalDateTime.now();
   }
 
-  // Métodos estáticos genéricos usando reflection
-  public static <T extends BaseEntity> List<T> findActive(Class<T> entityClass) {
-    return find("isActive = true").list();
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T extends BaseEntity> T findActiveById(Class<T> entityClass, Long id) {
-    return (T) find("id = ?1 and isActive = true", id).firstResult();
-  }
 }
