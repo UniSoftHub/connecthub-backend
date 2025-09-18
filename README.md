@@ -1,6 +1,6 @@
 # ConnectHub Backend
 
-O **ConnectHub Backend** é o núcleo servidor da plataforma ConnectHub, um ambiente colaborativo para integração de projetos acadêmicos, gamificação, comunicação e aprendizado. Construído com **Quarkus**, o framework Supersônico e Subatômico para Java, o sistema adota práticas modernas de arquitetura, incluindo DDD (Domain-Driven Design), e oferece uma API REST robusta e extensível.
+O **ConnectHub Backend** é o núcleo servidor da plataforma ConnectHub, um ambiente colaborativo para integração de projetos acadêmicos, gamificação, comunicação e aprendizado. Construído com **Quarkus**, o framework Supersônico e Subatômico para Java, o sistema adota práticas modernas de arquitetura, incluindo **Arquitetura Hexagonal (Ports & Adapters)** e **DDD (Domain-Driven Design)**, oferecendo uma API REST robusta, extensível e altamente desacoplada.
 
 ---
 
@@ -8,7 +8,7 @@ O **ConnectHub Backend** é o núcleo servidor da plataforma ConnectHub, um ambi
 
 - [Visão Geral do Projeto](#visão-geral-do-projeto)
 - [Arquitetura e Padrões](#arquitetura-e-padrões)
-  - [Domain-Driven Design (DDD)](#domain-driven-design-ddd)
+  - [Arquitetura Hexagonal + DDD](#arquitetura-hexagonal--ddd)
   - [Organização dos Pacotes](#organização-dos-pacotes)
 - [Principais Funcionalidades](#principais-funcionalidades)
   - [Gestão de Projetos](#gestão-de-projetos)
@@ -20,6 +20,7 @@ O **ConnectHub Backend** é o núcleo servidor da plataforma ConnectHub, um ambi
 - [Testes](#testes)
 - [Segurança e Autenticação](#segurança-e-autenticação)
 - [Referências e Guias](#referências-e-guias)
+- [Contato](#contato)
 
 ---
 
@@ -31,14 +32,34 @@ Este backend serve como base para recursos como publicação e comentários de p
 
 ## Arquitetura e Padrões
 
-### Domain-Driven Design (DDD)
+### Arquitetura Hexagonal + DDD
 
-O projeto segue o conceito de DDD para isolar responsabilidades e promover clareza de domínio. Os principais pacotes são:
+O projeto adota a **Arquitetura Hexagonal (Ports & Adapters)** combinada com **Domain-Driven Design (DDD)**, promovendo isolamento do núcleo de negócio, facilidade de testes e flexibilidade para integração com diferentes tecnologias.
 
-- `domain`: Entidades de negócio, enums e lógica de domínio.
-- `application`: Serviços de aplicação e lógica de orquestração.
-- `infrastructure`: Exceções, configurações e integrações externas.
-- `interfaces.rest`: Exposição de endpoints RESTful.
+- **Núcleo (Domínio)**: 
+  - Pacote: `src/main/java/br/com/hub/connect/domain/`
+  - Contém entidades, enums e exceções de negócio, totalmente desacoplados de frameworks e detalhes técnicos.
+- **Portas (Ports)**:
+  - Pacote: `src/main/java/br/com/hub/connect/application/`
+  - Serviços de aplicação, interfaces para casos de uso e DTOs (contratos de dados).
+- **Adaptadores (Adapters)**:
+  - **De entrada**: `src/main/java/br/com/hub/connect/interfaces/rest/` — Controladores REST que recebem requisições HTTP e acionam os serviços de aplicação.
+  - **De saída**: `src/main/java/br/com/hub/connect/infrastructure/` — Implementações técnicas para persistência, integrações externas, mapeamento de exceções, etc.
+
+**Vantagens:**
+- Isolamento da lógica de negócio de detalhes de infraestrutura
+- Facilidade para testes unitários e de integração
+- Possibilita trocar tecnologias externas sem impactar o domínio
+
+#### Estrutura Resumida
+
+```
+src/main/java/br/com/hub/connect/
+ ├── domain/         # Núcleo do domínio e regras de negócio (DDD)
+ ├── application/    # Portas de entrada, serviços e casos de uso
+ ├── interfaces/     # Adaptadores de entrada (ex: REST)
+ └── infrastructure/ # Adaptadores de saída (ex: persistência, mapeamento de exceções)
+```
 
 ### Organização dos Pacotes
 
@@ -131,7 +152,7 @@ Inclui testes automatizados de endpoints REST com Quarkus Test e RestAssured.
 
 ## Segurança e Autenticação
 
-O código sugere a intenção de uso de hash de senhas (ex: BCrypt), mas há trechos comentados. Recomenda-se revisar e garantir a implementação de hashing seguro das senhas e autenticação via JWT ou OAuth2, conforme padrões Quarkus.
+Posteriormente será integrado criptografia de senhas com BCrypt bem como um sistema de validação e de permissões por cargos.
 
 ---
 
