@@ -120,6 +120,14 @@ Crie as váriaveis de ambiente em seu computador, essas váriaveis são utilizad
 
 Execute o seguinte comando para iniciar o projeto:
 
+- Caso vocẽ tenha o maven instalado globalmente:
+
+```shell
+mvn quarkus:dev
+```
+
+- caso contrário rode:
+
 ```shell
 ./mvnw quarkus:dev
 ```
