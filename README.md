@@ -115,6 +115,11 @@ Outras dependências comuns do ecossistema Quarkus podem ser incluídas conforme
 
 ### Ambiente de Desenvolvimento
 
+Crie as váriaveis de ambiente em seu computador, essas váriaveis são utilizadas para subir o container do docker.
+- As váriaveis e seus nomes estão localizadas no arquivo `docker-compose.yml`
+
+Execute o seguinte comando para iniciar o projeto:
+
 ```shell
 ./mvnw quarkus:dev
 ```
