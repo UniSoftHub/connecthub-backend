@@ -44,7 +44,7 @@ public class ProjectCommentResource {
     ProjectCommentService projectCommentService;
 
     @GET
-    @Operation(summary = "List all comments for a project", description = "Returns a list of comments for a specific project")
+    @Operation(summary = "List all comments", description = "Returns a list of comments with pagination.")
     @APIResponse(responseCode = "200", description = "List of comments returned successfully")
     public Response getAllComments(
 
@@ -55,6 +55,19 @@ public class ProjectCommentResource {
         ) {
         
         List<ProjectCommentResponseDTO> comments = projectCommentService.findAll(page, size);
+        return Response.ok(comments).build();
+    }
+
+    @GET
+    @Path("/project/{projectId}")
+    @Operation(summary = "List all comments for a project", description = "Returns a list of comments for a specific project")
+    @APIResponse(responseCode = "200", description = "List of comments returned successfully")
+    public Response getCommentsByProjectId(
+        @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
+        @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+        @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size
+    ) {
+        List<ProjectCommentResponseDTO> comments = projectCommentService.findByProjectId(projectId, page, size);
         return Response.ok(comments).build();
     }
 
@@ -74,6 +87,8 @@ public class ProjectCommentResource {
     @Operation(summary = "Create a new project comment")
     @APIResponse(responseCode = "201", description = "Project comment created successfully")
     @APIResponse(responseCode = "400", description = "Invalid input data")
+    @APIResponse(responseCode = "409", description = "Conflict")
+    @APIResponse(responseCode = "500", description = "Internal server error")
     public Response createComment(@Valid CreateProjectCommentDTO dto) {
 
     ProjectCommentResponseDTO createdComment = projectCommentService.create(dto);
