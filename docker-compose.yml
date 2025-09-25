@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   web:
     build: .
@@ -27,7 +29,7 @@ services:
     networks:
       - connecthub-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${CH_DB_USER} -d ${CH_DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${CH_USER} -d ${CH_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
