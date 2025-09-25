@@ -15,7 +15,7 @@ public record UpdateProjectDTO(
 
     @Size(max = 200, message = "Image URL must be up to 200 characters") String imageUrl,
 
-    @Size(max = 200, message = "Technologies must be up to 200 characters") ProjectTechnologies technologies,
+    ProjectTechnologies technologies,
 
     @Min(value = 0, message = "Count Views must be a positive number") Integer countViews
 ) {

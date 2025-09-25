@@ -72,7 +72,7 @@ public class ProjectCommentService {
     }
     
      public long count() {
-        return Project.countActive();
+        return ProjectComment.countActive();
     }
     private ProjectCommentResponseDTO toResponseDTO(ProjectComment comment) {
         return new ProjectCommentResponseDTO(
@@ -85,7 +85,33 @@ public class ProjectCommentService {
     }  
 
     public List<ProjectCommentResponseDTO> listComments(String projectId) {
-        // TODO: Implement the logic to fetch comments for the given projectId
-        throw new UnsupportedOperationException("Not implemented yet");
+    try {
+        Long id = Long.parseLong(projectId);
+        return findByProjectId(id, 0, Integer.MAX_VALUE); // Retorna todos os comentários
+    } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Invalid project ID format: " + projectId);
     }
+}
+
+    public List<ProjectCommentResponseDTO> findByProjectId(@NotNull Long projectId, int page, int size) {
+    // Validações básicas
+    if (projectId == null || projectId <= 0) {
+        throw new IllegalArgumentException("Project ID must be a positive number");
+    }
+    
+    // Normalizar paginação
+    if (page < 0) page = 0;
+    if (size <= 0 || size > 100) size = 10;
+    
+    // Verificar se o projeto existe (opcional)
+    Project project = Project.findById(projectId);
+    if (project == null) {
+        throw new IllegalArgumentException("Project with ID " + projectId + " not found");
+    }
+    
+    return ProjectComment.findByProjectId(projectId, page, size)
+        .stream()
+        .map(this::toResponseDTO)
+        .collect(Collectors.toList());
+}
 }

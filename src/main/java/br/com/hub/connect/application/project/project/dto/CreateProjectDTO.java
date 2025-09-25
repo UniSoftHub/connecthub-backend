@@ -17,7 +17,7 @@ public record CreateProjectDTO(
 
     @Size(max = 200, message = "Image URL must be up to 200 characters") String imageUrl,
 
-    @NotNull(message = "Technologies are required") @Size(max = 200, message = "Technologies must be up to 200 characters") ProjectTechnologies technologies
+    @NotNull(message = "Technologies are required")  ProjectTechnologies technologies
 
 ) {
 

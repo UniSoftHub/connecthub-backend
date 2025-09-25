@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Positive;
 import br.com.hub.connect.application.project.project.dto.CreateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
 import br.com.hub.connect.application.project.project.dto.UpdateProjectDTO;
+import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.domain.exception.ProjectNotFoundException;
 
 import java.util.List;
@@ -99,22 +100,29 @@ public class ProjectService {
 
 
     private ProjectResponseDTO toResponseDTO(Project project) {
-        return new ProjectResponseDTO(
-            project.id,
-            project.name,
-            project.description,
-            project.repositoryUrl,
-            project.imageUrl,
-            project.technologies,
-            project.countViews,
-            project.createdAt,
-            project.author
-        );
+    return new ProjectResponseDTO(
+        project.id,
+        project.name,
+        project.description,
+        project.repositoryUrl,
+        project.imageUrl,
+        project.technologies,
+        project.countViews,
+        project.createdAt,
+        toUserResponse(project.author)
+    );
     }
 
-    
-    public List<ProjectResponseDTO> findByName(String name, int page, int size) {
-        // TODO: Implement the logic to find projects by name with pagination
-        throw new UnsupportedOperationException("findByName not implemented yet");
+    private UserResponseDTO toUserResponse(User user) {
+    return new UserResponseDTO(
+        user.id,
+        user.name,
+        user.email,
+        user.role,
+        user.xp,
+        user.level,
+        user.avatarUrl,
+        user.createdAt
+    );
     }
 }

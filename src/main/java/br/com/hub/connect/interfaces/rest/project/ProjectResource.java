@@ -69,6 +69,8 @@ public class ProjectResource {
   @Operation(summary = "Create a new project")
   @APIResponse(responseCode = "201", description = "Project created successfully")
   @APIResponse(responseCode = "400", description = "Invalid data")
+  @APIResponse(responseCode = "409", description = "Conflict")
+  @APIResponse(responseCode = "500", description = "Internal server error")
   public Response createProject(@Valid CreateProjectDTO dto) {
 
     ProjectResponseDTO createdProject = projectService.create(dto);

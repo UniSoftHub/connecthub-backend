@@ -10,10 +10,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "project_comments")
+@SequenceGenerator(name = "project_comments_seq", allocationSize = 1)
 public class ProjectComment extends BaseEntity {
 
   @Column(nullable = false, columnDefinition = "TEXT")
@@ -47,6 +49,14 @@ public class ProjectComment extends BaseEntity {
   public static long countActive() {
     return count("isActive = true");
   }
+
+  public static List<ProjectComment> findByProjectId(Long projectId, int page, int size) {
+    return find("project.id = ?1 AND isActive = true", projectId)
+            .page(page, size)
+            .list();
+}
+
+  
 
 
 }
