@@ -9,10 +9,12 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "xp_transactions")
+@SequenceGenerator(name = "xp_transactions_seq", allocationSize = 1)
 public class XpTransaction extends BaseEntity {
 
   @ManyToOne
