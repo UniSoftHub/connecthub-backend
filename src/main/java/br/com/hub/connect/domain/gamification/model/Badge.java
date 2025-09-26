@@ -3,10 +3,12 @@ package br.com.hub.connect.domain.gamification.model;
 import br.com.hub.connect.domain.shared.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "badges")
+@SequenceGenerator(name = "badges_seq", allocationSize = 1)
 public class Badge extends BaseEntity {
 
   @Column(nullable = false)
