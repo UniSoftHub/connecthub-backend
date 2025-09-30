@@ -12,10 +12,12 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "notifications")
+@SequenceGenerator(name = "notifications_seq", allocationSize = 1)
 public class Notification extends BaseEntity {
 
   @ManyToOne

@@ -8,10 +8,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "user_badges")
+@SequenceGenerator(name = "user_badges_seq", allocationSize = 1)
 public class UserBadge extends BaseEntity {
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
