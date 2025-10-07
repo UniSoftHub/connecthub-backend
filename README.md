@@ -119,7 +119,12 @@ Crie as váriaveis de ambiente em seu computador, essas váriaveis são utilizad
 - As váriaveis e seus nomes estão localizadas no arquivo `docker-compose.yml`
 
 Execute o seguinte comando para iniciar o projeto:
+- Isso vai subir o container que tem o banco de dados
+```shell
+docker compose up -d postgres
+```
 
+Em seguida:
 - Caso vocẽ tenha o maven instalado globalmente:
 
 ```shell
