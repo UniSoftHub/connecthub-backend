@@ -3,10 +3,13 @@ package br.com.hub.connect.domain.academic.model;
 import br.com.hub.connect.domain.shared.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "courses")
+@SequenceGenerator(name = "courses_seq", allocationSize = 1)
+
 public class Course extends BaseEntity {
 
   @Column(nullable = false)

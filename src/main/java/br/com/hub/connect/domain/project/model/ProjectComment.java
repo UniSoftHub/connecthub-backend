@@ -6,10 +6,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "project_comments")
+@SequenceGenerator(name = "project_comments_seq", allocationSize = 1)
+
 public class ProjectComment extends BaseEntity {
 
   @Column(nullable = false, columnDefinition = "TEXT")

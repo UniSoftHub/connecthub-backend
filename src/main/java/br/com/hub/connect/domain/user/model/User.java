@@ -15,10 +15,13 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
+@SequenceGenerator(name = "users_seq", allocationSize = 1)
+
 public class User extends BaseEntity {
 
   @Enumerated(EnumType.STRING)

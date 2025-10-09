@@ -1,11 +1,11 @@
-package br.com.hub.connect.application.userbadge.service;
+package br.com.hub.connect.application.gamification.userBadge.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import br.com.hub.connect.application.userbadge.dto.CreateUserBadgeDTO;
-import br.com.hub.connect.application.userbadge.dto.ResponseUserBadgeDTO;
+import br.com.hub.connect.application.gamification.userBadge.dto.CreateUserBadgeDTO;
+import br.com.hub.connect.application.gamification.userBadge.dto.ResponseUserBadgeDTO;
 import br.com.hub.connect.domain.exception.BadgeNotFoundException;
 import br.com.hub.connect.domain.exception.UserBadgeNotFoundException;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
