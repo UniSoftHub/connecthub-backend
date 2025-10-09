@@ -94,3 +94,5 @@ INSERT INTO project_comments (id, text, project_id, author_id, is_active, create
 (4, 'Dashboard ficou incrível! Os gráficos estão muito informativos. Qual biblioteca usou?', 4, 1, true, '2024-02-16 10:15:00', '2024-02-16 10:15:00'),
 (5, 'App de fitness tem um design muito clean. Pretende adicionar integração com wearables?', 5, 4, true, '2024-02-19 12:45:00', '2024-02-19 12:45:00');
 SELECT setval('project_comments_seq', (SELECT MAX(id) FROM project_comments), true);
+SELECT setval('project_comments_seq', (SELECT MAX(id) FROM project_comments), true);
+

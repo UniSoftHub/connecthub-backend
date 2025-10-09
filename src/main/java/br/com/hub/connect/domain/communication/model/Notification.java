@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 @Table(name = "notifications")
 @SequenceGenerator(name = "notifications_seq", allocationSize = 1)
 
+@SequenceGenerator(name = "notifications_seq", allocationSize = 1)
 public class Notification extends BaseEntity {
 
   @ManyToOne
