@@ -44,7 +44,7 @@ public class UserResource {
   public Response getAllUsers(
       @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
 
-      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("2") int size,
+      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
 
       @Parameter(description = "Filter by role") @QueryParam("role") UserRole role) {
 
