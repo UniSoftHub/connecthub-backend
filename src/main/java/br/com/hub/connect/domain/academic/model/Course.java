@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "courses")
 @SequenceGenerator(name = "courses_seq", allocationSize = 1)
+@SequenceGenerator(name = "courses_seq", allocationSize = 1)
+
 public class Course extends BaseEntity {
 
   @Column(nullable = false)

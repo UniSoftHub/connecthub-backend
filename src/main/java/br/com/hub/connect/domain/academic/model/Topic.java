@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "topics")
 @SequenceGenerator(name = "topics_seq", allocationSize = 1)
+
 public class Topic extends BaseEntity {
 
   @Column(nullable = false)

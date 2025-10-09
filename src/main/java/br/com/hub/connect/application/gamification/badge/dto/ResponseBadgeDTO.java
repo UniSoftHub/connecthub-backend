@@ -1,4 +1,4 @@
-package br.com.hub.connect.application.badge.dto;
+package br.com.hub.connect.application.gamification.badge.dto;
 
 import java.time.LocalDateTime;
 
@@ -9,5 +9,5 @@ public record ResponseBadgeDTO(
         String imageUrl,
         String criteria,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) { }
+        LocalDateTime updatedAt) {
+}

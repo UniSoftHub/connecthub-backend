@@ -6,12 +6,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "answers")
-@SequenceGenerator(name = "answers_seq", allocationSize = 1)
 public class Answer extends BaseEntity {
 
   @Column(nullable = false, columnDefinition = "TEXT")

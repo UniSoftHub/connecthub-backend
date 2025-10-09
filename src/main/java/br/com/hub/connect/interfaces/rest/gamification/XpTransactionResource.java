@@ -7,10 +7,10 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import br.com.hub.connect.application.xptransaction.dto.CreateXpTransactionDTO;
-import br.com.hub.connect.application.xptransaction.dto.UpdateXpTransactionDTO;
-import br.com.hub.connect.application.xptransaction.dto.ResponseXpTransactionDTO;
-import br.com.hub.connect.application.xptransaction.service.XpTransactionService;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.CreateXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.ResponseXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.UpdateXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.service.XpTransactionService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

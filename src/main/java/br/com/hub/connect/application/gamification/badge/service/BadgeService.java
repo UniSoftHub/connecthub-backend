@@ -1,16 +1,13 @@
-package br.com.hub.connect.application.badge.service;
+package br.com.hub.connect.application.gamification.badge.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import br.com.hub.connect.application.badge.dto.CreateBadgeDTO;
-import br.com.hub.connect.application.badge.dto.UpdateBadgeDTO;
-import br.com.hub.connect.application.badge.dto.ResponseBadgeDTO;
-
+import br.com.hub.connect.application.gamification.badge.dto.CreateBadgeDTO;
+import br.com.hub.connect.application.gamification.badge.dto.ResponseBadgeDTO;
+import br.com.hub.connect.application.gamification.badge.dto.UpdateBadgeDTO;
 import br.com.hub.connect.domain.exception.BadgeNotFoundException;
-
 import br.com.hub.connect.domain.gamification.model.Badge;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

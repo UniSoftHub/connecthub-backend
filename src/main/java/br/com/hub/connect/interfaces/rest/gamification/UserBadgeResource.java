@@ -7,9 +7,9 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import br.com.hub.connect.application.userbadge.dto.CreateUserBadgeDTO;
-import br.com.hub.connect.application.userbadge.dto.ResponseUserBadgeDTO;
-import br.com.hub.connect.application.userbadge.service.UserBadgeService;
+import br.com.hub.connect.application.gamification.userBadge.dto.CreateUserBadgeDTO;
+import br.com.hub.connect.application.gamification.userBadge.dto.ResponseUserBadgeDTO;
+import br.com.hub.connect.application.gamification.userBadge.service.UserBadgeService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

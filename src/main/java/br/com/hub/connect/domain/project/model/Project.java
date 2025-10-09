@@ -22,6 +22,8 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "projects")
 @SequenceGenerator(name = "projects_seq", allocationSize = 1)
+
+@SequenceGenerator(name = "projects_seq", allocationSize = 1)
 public class Project extends BaseEntity {
 
   @Column(nullable = false)

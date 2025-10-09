@@ -1,11 +1,11 @@
-package br.com.hub.connect.application.xptransaction.service;
+package br.com.hub.connect.application.gamification.xpTransaction.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import br.com.hub.connect.application.xptransaction.dto.CreateXpTransactionDTO;
-import br.com.hub.connect.application.xptransaction.dto.UpdateXpTransactionDTO;
-import br.com.hub.connect.application.xptransaction.dto.ResponseXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.CreateXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.ResponseXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.UpdateXpTransactionDTO;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
 import br.com.hub.connect.domain.exception.XpTransactionNotFoundException;
 import br.com.hub.connect.domain.gamification.model.XpTransaction;
@@ -125,7 +125,6 @@ public class XpTransactionService {
         xpTransaction.referenceId,
         xpTransaction.type,
         xpTransaction.createdAt,
-        xpTransaction.updatedAt
-    );
+        xpTransaction.updatedAt);
   }
 }
