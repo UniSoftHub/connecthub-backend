@@ -18,27 +18,26 @@ import br.com.hub.connect.domain.user.model.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
-
-
 @ApplicationScoped
 public class ProjectService {
 
     public List<ProjectResponseDTO> findAll(int page, int size) {
-    return Project.findAllActive(page, size)
-        .stream()
-        .map(this::toResponseDTO)
-        .collect(Collectors.toList());
-  }
+        return Project.findAllActive(page, size)
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 
-   public ProjectResponseDTO findById(@NotNull Long id) {
-    Project project = Project.findActiveById(id)
-        .orElseThrow(() -> new ProjectNotFoundException(id));
+    public ProjectResponseDTO findById(@NotNull Long id) {
+        Project project = Project.findActiveById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
 
-    return toResponseDTO(project);
-  }
+        return toResponseDTO(project);
+    }
+
     @Transactional
     public ProjectResponseDTO create(@Valid CreateProjectDTO dto) {
-        
+
         Project project = new Project();
         project.name = dto.name();
         project.description = dto.description();
@@ -46,40 +45,38 @@ public class ProjectService {
         project.repositoryUrl = dto.repositoryUrl();
         project.imageUrl = dto.imageUrl();
         project.author = User.findById(dto.authorId());
-    
+
         project.persist();
         return toResponseDTO(project);
     }
-    
-
 
     @Transactional
     public ProjectResponseDTO update(@NotNull @Positive Long id, @Valid UpdateProjectDTO dto) {
         Project project = Project.findActiveById(id)
-            .orElseThrow(() -> new ProjectNotFoundException(id));
+                .orElseThrow(() -> new ProjectNotFoundException(id));
 
         if (dto.name() != null) {
-        project.name = dto.name();
+            project.name = dto.name();
         }
         if (dto.description() != null) {
-        project.description = dto.description();
+            project.description = dto.description();
         }
         if (dto.technologies() != null) {
-        project.technologies = Set.of(dto.technologies());
+            project.technologies = Set.of(dto.technologies());
         }
         if (dto.repositoryUrl() != null) {
-        project.repositoryUrl = dto.repositoryUrl();
+            project.repositoryUrl = dto.repositoryUrl();
         }
         if (dto.imageUrl() != null) {
-        project.imageUrl = dto.imageUrl();
+            project.imageUrl = dto.imageUrl();
         }
         if (dto.authorId() != null) {
-        project.author = User.findById(dto.authorId());
+            project.author = User.findById(dto.authorId());
         }
         if (dto.countViews() != null) {
             project.countViews = dto.countViews();
         }
-    
+
         project.persist();
         return toResponseDTO(project);
     }
@@ -87,42 +84,37 @@ public class ProjectService {
     @Transactional
     public void delete(@NotNull @Positive Long id) {
         Project project = Project.findActiveById(id)
-            .orElseThrow(() -> new ProjectNotFoundException(id));
+                .orElseThrow(() -> new ProjectNotFoundException(id));
         project.isActive = false;
         project.persist();
     }
-    
 
     public long count() {
         return Project.countActive();
     }
 
-
-
     private ProjectResponseDTO toResponseDTO(Project project) {
-    return new ProjectResponseDTO(
-        project.id,
-        project.name,
-        project.description,
-        project.repositoryUrl,
-        project.imageUrl,
-        project.technologies,
-        project.countViews,
-        project.createdAt,
-        toUserResponse(project.author)
-    );
+        return new ProjectResponseDTO(
+                project.id,
+                project.name,
+                project.description,
+                project.repositoryUrl,
+                project.imageUrl,
+                project.technologies,
+                project.countViews,
+                project.createdAt,
+                toUserResponse(project.author));
     }
 
     private UserResponseDTO toUserResponse(User user) {
-    return new UserResponseDTO(
-        user.id,
-        user.name,
-        user.email,
-        user.role,
-        user.xp,
-        user.level,
-        user.avatarUrl,
-        user.createdAt
-    );
+        return new UserResponseDTO(
+                user.id,
+                user.name,
+                user.email,
+                user.role,
+                user.xp,
+                user.level,
+                user.avatarUrl,
+                user.createdAt);
     }
 }

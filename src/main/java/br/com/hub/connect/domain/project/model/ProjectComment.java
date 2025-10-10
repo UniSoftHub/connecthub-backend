@@ -36,8 +36,7 @@ public class ProjectComment extends BaseEntity {
         id, text, project.id, author.id);
   }
 
-
-   public static List<ProjectComment> findAllActive(int page, int size) {
+  public static List<ProjectComment> findAllActive(int page, int size) {
     return find("isActive = true")
         .page(Page.of(page, size))
         .list();
@@ -47,17 +46,15 @@ public class ProjectComment extends BaseEntity {
     return find("id = ?1 and isActive = true", id)
         .firstResultOptional();
   }
+
   public static long countActive() {
     return count("isActive = true");
   }
 
   public static List<ProjectComment> findByProjectId(Long projectId, int page, int size) {
     return find("project.id = ?1 AND isActive = true", projectId)
-            .page(page, size)
-            .list();
-}
-
-  
-
+        .page(page, size)
+        .list();
+  }
 
 }

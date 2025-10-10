@@ -6,14 +6,13 @@ import br.com.hub.connect.domain.project.enums.ProjectTechnologies;
 import br.com.hub.connect.application.user.dto.UserResponseDTO;
 
 public record ProjectResponseDTO(
-    Long id,
-    String name,
-    String description,
-    String repositoryUrl,
-    String imageUrl,
-    Set<ProjectTechnologies> technologies,
-    int countViews,
-    LocalDateTime createdAt,
-    UserResponseDTO author
-) {}
-
+        Long id,
+        String name,
+        String description,
+        String repositoryUrl,
+        String imageUrl,
+        Set<ProjectTechnologies> technologies,
+        int countViews,
+        LocalDateTime createdAt,
+        UserResponseDTO author) {
+}

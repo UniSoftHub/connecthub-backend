@@ -57,8 +57,7 @@ public class Project extends BaseEntity {
         id, name, description, repositoryUrl);
   }
 
-
-   public static List<Project> findAllActive(int page, int size) {
+  public static List<Project> findAllActive(int page, int size) {
     return find("isActive = true")
         .page(Page.of(page, size))
         .list();
@@ -68,6 +67,7 @@ public class Project extends BaseEntity {
     return find("id = ?1 and isActive = true", id)
         .firstResultOptional();
   }
+
   public static long countActive() {
     return count("isActive = true");
   }
