@@ -4,9 +4,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 public record UpdateProjectCommentDTO(
-        @Size(min = 1, max = 500, message = "Text must be between 1 and 500 characters") String text,
+    @Size(min = 1, max = 500, message = "Text must be between 1 and 500 characters") String text,
 
-        @Min(value = 1, message = "Author ID must be a positive number") Long authorId,
+    @Min(value = 1, message = "Author ID must be a positive number") Long authorId,
 
-        @Min(value = 1, message = "Project ID must be a positive number") Long projectId) {
+    @Min(value = 1, message = "Project ID must be a positive number") Long projectId) {
 }

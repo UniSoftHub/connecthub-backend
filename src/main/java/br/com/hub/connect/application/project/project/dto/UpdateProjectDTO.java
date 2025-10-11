@@ -5,18 +5,18 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 public record UpdateProjectDTO(
-        @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters") String name,
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters") String name,
 
-        @Size(min = 10, max = 500, message = "Description must be between 10 and 500 characters") String description,
+    @Size(min = 10, max = 500, message = "Description must be between 10 and 500 characters") String description,
 
-        @Min(value = 1, message = "Author ID must be a positive number") Long authorId,
+    @Min(value = 1, message = "Author ID must be a positive number") Long authorId,
 
-        @Size(min = 10, max = 200, message = "Repository URL must be between 10 and 200 characters") String repositoryUrl,
+    @Size(min = 10, max = 200, message = "Repository URL must be between 10 and 200 characters") String repositoryUrl,
 
-        @Size(max = 200, message = "Image URL must be up to 200 characters") String imageUrl,
+    @Size(max = 200, message = "Image URL must be up to 200 characters") String imageUrl,
 
-        ProjectTechnologies technologies,
+    ProjectTechnologies technologies,
 
-        @Min(value = 0, message = "Count Views must be a positive number") Integer countViews) {
+    @Min(value = 0, message = "Count Views must be a positive number") Integer countViews) {
 
 }
