@@ -17,7 +17,6 @@ public record UpdateProjectDTO(
 
     ProjectTechnologies technologies,
 
-    @Min(value = 0, message = "Count Views must be a positive number") Integer countViews
-) {
+    @Min(value = 0, message = "Count Views must be a positive number") Integer countViews) {
 
 }

@@ -36,30 +36,29 @@ import jakarta.ws.rs.DefaultValue;
 @Tag(name = "Projects", description = "Operations about projects")
 public class ProjectResource {
 
-    @Inject
-    ProjectService projectService;
+  @Inject
+  ProjectService projectService;
 
-    @GET
-    @Operation(summary = "List all active projects", description = "Returns a paged list of active projects")
-    @APIResponse(responseCode = "200", description = "List of projects returned successfully")
-    public Response getAllProjects(
-        @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+  @GET
+  @Operation(summary = "List all active projects", description = "Returns a paged list of active projects")
+  @APIResponse(responseCode = "200", description = "List of projects returned successfully")
+  public Response getAllProjects(
+      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
 
-        @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size
+      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size
 
-    ) {
-        List<ProjectResponseDTO> projects = projectService.findAll(page, size);
-        return Response.ok(projects).build();
-    }
+  ) {
+    List<ProjectResponseDTO> projects = projectService.findAll(page, size);
+    return Response.ok(projects).build();
+  }
 
-
-    @GET
-    @Path("/{id}")
-    @Operation(summary = "Find project by ID")
-    @APIResponse(responseCode = "200", description = "Project found")
-    @APIResponse(responseCode = "404", description = "Project not found")
-    public Response getProjectById(
-        @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
+  @GET
+  @Path("/{id}")
+  @Operation(summary = "Find project by ID")
+  @APIResponse(responseCode = "200", description = "Project found")
+  @APIResponse(responseCode = "404", description = "Project not found")
+  public Response getProjectById(
+      @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
     ProjectResponseDTO project = projectService.findById(id);
     return Response.ok(project).build();
@@ -103,10 +102,10 @@ public class ProjectResource {
   @APIResponse(responseCode = "204", description = "Project removed successfully")
   @APIResponse(responseCode = "404", description = "Project not found")
   public Response deleteProject(
-    @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
+      @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
-  projectService.delete(id);
-  return Response.noContent().build();
+    projectService.delete(id);
+    return Response.noContent().build();
   }
 
   @GET
@@ -127,8 +126,7 @@ public class ProjectResource {
   }
 
   public record CountResponse(long count) {
-  
 
-}
+  }
 
 }

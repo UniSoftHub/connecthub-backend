@@ -18,88 +18,82 @@ import br.com.hub.connect.domain.user.model.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
-
-
 @ApplicationScoped
 public class ProjectService {
 
-    public List<ProjectResponseDTO> findAll(int page, int size) {
+  public List<ProjectResponseDTO> findAll(int page, int size) {
     return Project.findAllActive(page, size)
         .stream()
         .map(this::toResponseDTO)
         .collect(Collectors.toList());
   }
 
-   public ProjectResponseDTO findById(@NotNull Long id) {
+  public ProjectResponseDTO findById(@NotNull Long id) {
     Project project = Project.findActiveById(id)
         .orElseThrow(() -> new ProjectNotFoundException(id));
 
     return toResponseDTO(project);
   }
-    @Transactional
-    public ProjectResponseDTO create(@Valid CreateProjectDTO dto) {
-        
-        Project project = new Project();
-        project.name = dto.name();
-        project.description = dto.description();
-        project.technologies = Set.of(dto.technologies());
-        project.repositoryUrl = dto.repositoryUrl();
-        project.imageUrl = dto.imageUrl();
-        project.author = User.findById(dto.authorId());
-    
-        project.persist();
-        return toResponseDTO(project);
+
+  @Transactional
+  public ProjectResponseDTO create(@Valid CreateProjectDTO dto) {
+
+    Project project = new Project();
+    project.name = dto.name();
+    project.description = dto.description();
+    project.technologies = Set.of(dto.technologies());
+    project.repositoryUrl = dto.repositoryUrl();
+    project.imageUrl = dto.imageUrl();
+    project.author = User.findById(dto.authorId());
+
+    project.persist();
+    return toResponseDTO(project);
+  }
+
+  @Transactional
+  public ProjectResponseDTO update(@NotNull @Positive Long id, @Valid UpdateProjectDTO dto) {
+    Project project = Project.findActiveById(id)
+        .orElseThrow(() -> new ProjectNotFoundException(id));
+
+    if (dto.name() != null) {
+      project.name = dto.name();
     }
-    
-
-
-    @Transactional
-    public ProjectResponseDTO update(@NotNull @Positive Long id, @Valid UpdateProjectDTO dto) {
-        Project project = Project.findActiveById(id)
-            .orElseThrow(() -> new ProjectNotFoundException(id));
-
-        if (dto.name() != null) {
-        project.name = dto.name();
-        }
-        if (dto.description() != null) {
-        project.description = dto.description();
-        }
-        if (dto.technologies() != null) {
-        project.technologies = Set.of(dto.technologies());
-        }
-        if (dto.repositoryUrl() != null) {
-        project.repositoryUrl = dto.repositoryUrl();
-        }
-        if (dto.imageUrl() != null) {
-        project.imageUrl = dto.imageUrl();
-        }
-        if (dto.authorId() != null) {
-        project.author = User.findById(dto.authorId());
-        }
-        if (dto.countViews() != null) {
-            project.countViews = dto.countViews();
-        }
-    
-        project.persist();
-        return toResponseDTO(project);
+    if (dto.description() != null) {
+      project.description = dto.description();
+    }
+    if (dto.technologies() != null) {
+      project.technologies = Set.of(dto.technologies());
+    }
+    if (dto.repositoryUrl() != null) {
+      project.repositoryUrl = dto.repositoryUrl();
+    }
+    if (dto.imageUrl() != null) {
+      project.imageUrl = dto.imageUrl();
+    }
+    if (dto.authorId() != null) {
+      project.author = User.findById(dto.authorId());
+    }
+    if (dto.countViews() != null) {
+      project.countViews = dto.countViews();
     }
 
-    @Transactional
-    public void delete(@NotNull @Positive Long id) {
-        Project project = Project.findActiveById(id)
-            .orElseThrow(() -> new ProjectNotFoundException(id));
-        project.isActive = false;
-        project.persist();
-    }
-    
+    project.persist();
+    return toResponseDTO(project);
+  }
 
-    public long count() {
-        return Project.countActive();
-    }
+  @Transactional
+  public void delete(@NotNull @Positive Long id) {
+    Project project = Project.findActiveById(id)
+        .orElseThrow(() -> new ProjectNotFoundException(id));
+    project.isActive = false;
+    project.persist();
+  }
 
+  public long count() {
+    return Project.countActive();
+  }
 
-
-    private ProjectResponseDTO toResponseDTO(Project project) {
+  private ProjectResponseDTO toResponseDTO(Project project) {
     return new ProjectResponseDTO(
         project.id,
         project.name,
@@ -109,11 +103,10 @@ public class ProjectService {
         project.technologies,
         project.countViews,
         project.createdAt,
-        toUserResponse(project.author)
-    );
-    }
+        toUserResponse(project.author));
+  }
 
-    private UserResponseDTO toUserResponse(User user) {
+  private UserResponseDTO toUserResponse(User user) {
     return new UserResponseDTO(
         user.id,
         user.name,
@@ -122,7 +115,6 @@ public class ProjectService {
         user.xp,
         user.level,
         user.avatarUrl,
-        user.createdAt
-    );
-    }
+        user.createdAt);
+  }
 }

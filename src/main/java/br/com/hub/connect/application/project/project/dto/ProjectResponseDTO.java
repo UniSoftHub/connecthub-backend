@@ -14,6 +14,5 @@ public record ProjectResponseDTO(
     Set<ProjectTechnologies> technologies,
     int countViews,
     LocalDateTime createdAt,
-    UserResponseDTO author
-) {}
-
+    UserResponseDTO author) {
+}
