@@ -9,17 +9,17 @@ import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class XpTransactionNotFoundExceptionMapper implements ExceptionMapper<XpTransactionNotFoundException> {
-    private static final Logger logger = LoggerFactory.getLogger(XpTransactionNotFoundExceptionMapper.class);
+  private static final Logger logger = LoggerFactory.getLogger(XpTransactionNotFoundExceptionMapper.class);
 
-    @Override
-    public Response toResponse(XpTransactionNotFoundException exception) {
-        logger.warn("XpTransaction not found: {}", exception.getMessage());
+  @Override
+  public Response toResponse(XpTransactionNotFoundException exception) {
+    logger.warn("XpTransaction not found: {}", exception.getMessage());
 
-        ErrorResponse error = new ErrorResponse(
-                "XP_TRANSACTION_NOT_FOUND",
-                exception.getMessage(),
-                404);
+    ErrorResponse error = new ErrorResponse(
+        "XP_TRANSACTION_NOT_FOUND",
+        exception.getMessage(),
+        404);
 
-        return Response.status(404).entity(error).build();
-    }
+    return Response.status(404).entity(error).build();
+  }
 }

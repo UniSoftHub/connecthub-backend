@@ -9,17 +9,17 @@ import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class UserBadgeNotFoundExceptionMapper implements ExceptionMapper<UserBadgeNotFoundException> {
-    private static final Logger logger = LoggerFactory.getLogger(UserBadgeNotFoundExceptionMapper.class);
+  private static final Logger logger = LoggerFactory.getLogger(UserBadgeNotFoundExceptionMapper.class);
 
-    @Override
-    public Response toResponse(UserBadgeNotFoundException exception) {
-        logger.warn("UserBadge not found: {}", exception.getMessage());
+  @Override
+  public Response toResponse(UserBadgeNotFoundException exception) {
+    logger.warn("UserBadge not found: {}", exception.getMessage());
 
-        ErrorResponse error = new ErrorResponse(
-                "USER_BADGE_NOT_FOUND",
-                exception.getMessage(),
-                404);
+    ErrorResponse error = new ErrorResponse(
+        "USER_BADGE_NOT_FOUND",
+        exception.getMessage(),
+        404);
 
-        return Response.status(404).entity(error).build();
-    }
+    return Response.status(404).entity(error).build();
+  }
 }
