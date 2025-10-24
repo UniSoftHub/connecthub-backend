@@ -30,11 +30,7 @@ import br.com.hub.connect.application.project.projectComment.dto.CreateProjectCo
 import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCommentDTO;
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
 
-// Ideias de path para comments:
-//@Path("/api/projects/{projectId}/comments")
-//@Path("/api/project/comments")
-
-@Path("/api/projects/comments")
+@Path("/api/projects/{projectId}/comments")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Project Comments", description = "Operations about project comments")
@@ -45,20 +41,6 @@ public class ProjectCommentResource {
   ProjectCommentService projectCommentService;
 
   @GET
-  @Operation(summary = "List all comments", description = "Returns a list of comments with pagination.")
-  @APIResponse(responseCode = "200", description = "List of comments returned successfully")
-  public Response getAllComments(
-
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
-
-      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
-
-    List<ProjectCommentResponseDTO> comments = projectCommentService.findAll(page, size);
-    return Response.ok(comments).build();
-  }
-
-  @GET
-  @Path("/project/{projectId}")
   @Operation(summary = "List all comments for a project", description = "Returns a list of comments for a specific project")
   @APIResponse(responseCode = "200", description = "List of comments returned successfully")
   public Response getCommentsByProjectId(
@@ -71,7 +53,7 @@ public class ProjectCommentResource {
 
   @GET
   @Path("/{id}")
-  @Operation(summary = "Find comment by ID")
+  @Operation(summary = "Find comment by ID per project", description = "Returns a specific comment by its ID for a given project")
   @APIResponse(responseCode = "200", description = "Project comment found")
   @APIResponse(responseCode = "404", description = "Project comment not found")
   public Response getCommentById(
@@ -85,8 +67,6 @@ public class ProjectCommentResource {
   @Operation(summary = "Create a new project comment")
   @APIResponse(responseCode = "201", description = "Project comment created successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
-  @APIResponse(responseCode = "409", description = "Conflict")
-  @APIResponse(responseCode = "500", description = "Internal server error")
   public Response createComment(@Valid CreateProjectCommentDTO dto) {
 
     ProjectCommentResponseDTO createdComment = projectCommentService.create(dto);
@@ -104,8 +84,6 @@ public class ProjectCommentResource {
   @APIResponse(responseCode = "200", description = "Project comment updated successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
   @APIResponse(responseCode = "404", description = "Project comment not found")
-  @APIResponse(responseCode = "409", description = "Conflict")
-  @APIResponse(responseCode = "500", description = "Internal server error")
   public Response updateComment(
       @Parameter(description = "ID of the comment to be updated", required = true) @PathParam("id") @NotNull Long id,
       @Valid UpdateProjectCommentDTO dto) {
@@ -136,8 +114,8 @@ public class ProjectCommentResource {
 
   @GET
   @Path("/count")
-  @Operation(summary = "Count active project comments", description = "Returns the total number of active project comments")
-  @APIResponse(responseCode = "200", description = "Total number of active project commentsreturned successfully")
+  @Operation(summary = "Count active project comments per project", description = "Returns the total number of active project comments for a given project")
+  @APIResponse(responseCode = "200", description = "Total number of active project comments per project returned successfully")
   public Response countActiveComments() {
     long count = projectCommentService.count();
     return Response.ok(new CountResponse(count)).build();
