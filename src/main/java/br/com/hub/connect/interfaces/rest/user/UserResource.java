@@ -12,9 +12,9 @@ import br.com.hub.connect.application.user.dto.UpdateUserDTO;
 import br.com.hub.connect.application.user.dto.UserListResponse;
 import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.application.user.service.UserService;
+import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.domain.user.enums.UserRole;
-import br.com.hub.connect.infrastructure.exception.ErrorResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -155,8 +155,5 @@ public class UserResource {
 
   private long getActiveUsersCount() {
     return userService.count();
-  }
-
-  public record CountResponse(long count) {
   }
 }
