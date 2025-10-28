@@ -2,76 +2,129 @@ package br.com.hub.connect.application.project.projectComment.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCommentDTO;
-import br.com.hub.connect.domain.exception.ProjectCommentNotFoundException;
-import br.com.hub.connect.domain.project.model.ProjectComment;
 import br.com.hub.connect.application.project.projectComment.dto.CreateProjectCommentDTO;
-import br.com.hub.connect.domain.user.model.User;
+import br.com.hub.connect.domain.exception.ProjectCommentNotFoundException;
+import br.com.hub.connect.domain.exception.UserNotFoundException;
+import br.com.hub.connect.domain.project.model.ProjectComment;
 import br.com.hub.connect.domain.project.model.Project;
+import br.com.hub.connect.domain.user.model.User;
+import br.com.hub.connect.application.project.project.service.ProjectService;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class ProjectCommentService {
-  public List<ProjectCommentResponseDTO> findAll(int page, int size) {
-    return ProjectComment.findAllActive(page, size)
+
+  private final ProjectService projectService;
+
+  @Inject
+  public ProjectCommentService(ProjectService projectService) {
+    this.projectService = projectService;
+  }
+
+  public List<ProjectCommentResponseDTO> findByProjectId(@NotNull Long projectId, int page, int size) {
+
+    if (page < 0)
+      page = 0;
+    if (size <= 0 || size > 100)
+      size = 10;
+
+    projectService.findById(projectId);
+
+    return ProjectComment.findByProjectId(projectId, page, size)
         .stream()
         .map(this::toResponseDTO)
         .collect(Collectors.toList());
   }
 
-  public ProjectCommentResponseDTO findById(@NotNull Long id) {
-    ProjectComment comment = ProjectComment.findActiveById(id)
-        .orElseThrow(() -> new ProjectCommentNotFoundException(id));
-
+  public ProjectCommentResponseDTO findCommentByNumberAndProjectId(@NotNull Long projectId,
+      @NotNull Long commentNumber) {
+    ProjectComment comment = findActiveCommentEntityByNumber(projectId, commentNumber);
     return toResponseDTO(comment);
   }
 
+  public ProjectComment findActiveCommentEntityByNumber(@NotNull Long projectId, @NotNull Long projectCommentNumber) {
+    return ProjectComment.find(
+        "project.id = ?1 AND projectCommentNumber = ?2 AND isActive = true",
+        projectId, projectCommentNumber)
+
+        .firstResultOptional()
+        .map(entity -> (ProjectComment) entity)
+        .orElseThrow(() -> new NotFoundException(
+            String.format("Comment with number %d not found for project %d", projectCommentNumber, projectId)));
+  }
+
   @Transactional
-  public ProjectCommentResponseDTO create(@Valid CreateProjectCommentDTO dto) {
+  public ProjectCommentResponseDTO create(@NotNull Long projectId, @Valid CreateProjectCommentDTO dto) {
+
+    projectService.findById(projectId);
+
+    Project project = Project.findById(projectId);
+
+    User author = (User) User.findActiveById(dto.authorId())
+        .orElseThrow(() -> new UserNotFoundException(dto.authorId()));
+
+    long currentCount = ProjectComment.countByProjectId(projectId);
+    long nextCommentNumber = currentCount + 1;
 
     ProjectComment comment = new ProjectComment();
     comment.text = dto.text();
-    comment.project = Project.findById(dto.projectId());
-    comment.author = User.findById(dto.authorId());
+    comment.project = project;
+    comment.author = author;
+    comment.projectCommentNumber = nextCommentNumber;
 
-    comment.persist();
+    comment.persistAndFlush();
     return toResponseDTO(comment);
   }
 
   @Transactional
-  public void update(@NotNull @Positive Long id, @Valid UpdateProjectCommentDTO dto) {
-    ProjectComment comment = ProjectComment.findActiveById(id)
-        .orElseThrow(() -> new ProjectCommentNotFoundException(id));
+  public ProjectCommentResponseDTO update(@NotNull Long projectId, @NotNull Long commentNumber,
+      @Valid UpdateProjectCommentDTO dto) {
+
+    ProjectComment comment = findActiveCommentEntityByNumber(projectId, commentNumber);
 
     if (dto.text() != null) {
       comment.text = dto.text();
     }
-    if (dto.projectId() != null) {
-      comment.project = Project.findById(dto.projectId());
-    }
+
     if (dto.authorId() != null) {
-      comment.author = User.findById(dto.authorId());
+      User newAuthor = (User) User.findActiveById(dto.authorId())
+          .orElseThrow(() -> new UserNotFoundException(dto.authorId()));
+      comment.author = newAuthor;
     }
 
-    comment.persist();
-    // return toResponseDTO(comment);
+    comment.persistAndFlush();
+    return toResponseDTO(comment);
   }
 
   @Transactional
-  public void delete(@NotNull @Positive Long id) {
-    ProjectComment comment = ProjectComment.findActiveById(id)
-        .orElseThrow(() -> new ProjectCommentNotFoundException(id));
+  public void delete(@NotNull Long projectId, @NotNull Long commentNumber) {
+    ProjectComment comment = findActiveCommentEntityByNumber(projectId, commentNumber);
     comment.softDelete();
   }
 
-  public long count() {
-    return ProjectComment.countActive();
+  public long countByProjectId(@NotNull Long projectId) {
+
+    projectService.findById(projectId);
+
+    return ProjectComment.count("project.id", projectId);
+  }
+
+  ProjectComment findActiveCommentEntity(@NotNull Long projectId, @NotNull Long commentId) {
+    ProjectComment comment = ProjectComment.findActiveById(commentId)
+        .orElseThrow(() -> new ProjectCommentNotFoundException(commentId));
+
+    if (!comment.project.id.equals(projectId)) {
+      throw new ProjectCommentNotFoundException(commentId);
+    }
+
+    return comment;
   }
 
   private ProjectCommentResponseDTO toResponseDTO(ProjectComment comment) {
@@ -80,39 +133,7 @@ public class ProjectCommentService {
         comment.text,
         comment.author.id,
         comment.createdAt,
-        comment.project.id);
-  }
-
-  public List<ProjectCommentResponseDTO> listComments(String projectId) {
-    try {
-      Long id = Long.parseLong(projectId);
-      return findByProjectId(id, 0, Integer.MAX_VALUE); // Retorna todos os comentários
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid project ID format: " + projectId);
-    }
-  }
-
-  public List<ProjectCommentResponseDTO> findByProjectId(@NotNull Long projectId, int page, int size) {
-    // Validações básicas
-    if (projectId == null || projectId <= 0) {
-      throw new IllegalArgumentException("Project ID must be a positive number");
-    }
-
-    // Normalizar paginação
-    if (page < 0)
-      page = 0;
-    if (size <= 0 || size > 100)
-      size = 10;
-
-    // Verificar se o projeto existe (opcional)
-    Project project = Project.findById(projectId);
-    if (project == null) {
-      throw new IllegalArgumentException("Project with ID " + projectId + " not found");
-    }
-
-    return ProjectComment.findByProjectId(projectId, page, size)
-        .stream()
-        .map(this::toResponseDTO)
-        .collect(Collectors.toList());
+        comment.project.id,
+        comment.projectCommentNumber);
   }
 }
