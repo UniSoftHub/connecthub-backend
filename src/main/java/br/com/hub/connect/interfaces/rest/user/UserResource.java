@@ -9,8 +9,11 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.user.dto.CreateUserDTO;
 import br.com.hub.connect.application.user.dto.UpdateUserDTO;
+import br.com.hub.connect.application.user.dto.UserListResponse;
 import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.application.user.service.UserService;
+import br.com.hub.connect.application.utils.CountResponse;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.domain.user.enums.UserRole;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -42,17 +45,25 @@ public class UserResource {
   @Operation(summary = "List all active users", description = "Returns a paged list of active users")
   @APIResponse(responseCode = "200", description = "List of users returned successfully")
   public Response getAllUsers(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
 
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
 
       @Parameter(description = "Filter by role") @QueryParam("role") UserRole role) {
 
-    List<UserResponseDTO> users = (role != null)
-        ? userService.findByRole(role, page, size)
-        : userService.findAll(page, size);
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+    int pageIndex = page - 1;
 
-    return Response.ok(users).build();
+    List<UserResponseDTO> users = (role != null)
+        ? userService.findByRole(role, pageIndex, size)
+        : userService.findAll(pageIndex, size);
+
+    var totalCount = getActiveUsersCount();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new UserListResponse(totalPages, users)).build();
   }
 
   @GET
@@ -138,10 +149,11 @@ public class UserResource {
   @Operation(summary = "Count active users", description = "Returns the total number of active users")
   @APIResponse(responseCode = "200", description = "Total number of active users returned successfully")
   public Response countActiveUsers() {
-    long count = userService.count();
+    long count = getActiveUsersCount();
     return Response.ok(new CountResponse(count)).build();
   }
 
-  public record CountResponse(long count) {
+  private long getActiveUsersCount() {
+    return userService.count();
   }
 }
