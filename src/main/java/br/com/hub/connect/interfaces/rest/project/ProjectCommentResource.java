@@ -20,9 +20,10 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
 import br.com.hub.connect.application.project.projectComment.service.ProjectCommentService;
@@ -40,6 +41,9 @@ public class ProjectCommentResource {
   @Inject
   ProjectCommentService projectCommentService;
 
+  @Context
+  UriInfo uriInfo;
+
   @GET
   @Operation(summary = "List all comments for a project", description = "Returns a list of comments for a specific project")
   @APIResponse(responseCode = "200", description = "List of comments returned successfully")
@@ -52,14 +56,15 @@ public class ProjectCommentResource {
   }
 
   @GET
-  @Path("/{id}")
+  @Path("/{commentNumber}")
   @Operation(summary = "Find comment by ID per project", description = "Returns a specific comment by its ID for a given project")
   @APIResponse(responseCode = "200", description = "Project comment found")
   @APIResponse(responseCode = "404", description = "Project comment not found")
-  public Response getCommentById(
-      @Parameter(description = "ID of the comment", required = true) @PathParam("id") @NotNull Long id) {
+  public Response getCommentByNumber(
+      @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
+      @Parameter(description = "Number of the comment", required = true) @PathParam("commentNumber") @NotNull Long commentNumber) {
 
-    ProjectCommentResponseDTO comment = projectCommentService.findById(id);
+    ProjectCommentResponseDTO comment = projectCommentService.findCommentByNumberAndProjectId(projectId, commentNumber);
     return Response.ok(comment).build();
   }
 
@@ -67,45 +72,52 @@ public class ProjectCommentResource {
   @Operation(summary = "Create a new project comment")
   @APIResponse(responseCode = "201", description = "Project comment created successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
-  public Response createComment(@Valid CreateProjectCommentDTO dto) {
+  public Response createComment(
 
-    ProjectCommentResponseDTO createdComment = projectCommentService.create(dto);
+      @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
+      @Valid CreateProjectCommentDTO dto) {
+
+    ProjectCommentResponseDTO createdComment = projectCommentService.create(projectId, dto);
 
     return Response.status(Response.Status.CREATED)
-        .location(UriBuilder.fromPath("/api/projects/comments/{id}")
-            .build(createdComment.id()))
+        .location(uriInfo.getAbsolutePathBuilder()
+            .path(createdComment.projectCommentNumber().toString())
+            .build())
         .entity(createdComment)
         .build();
   }
 
   @PATCH
-  @Path("/{id}")
+  @Path("/{commentNumber}")
   @Operation(summary = "Update a project comment")
   @APIResponse(responseCode = "200", description = "Project comment updated successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
   @APIResponse(responseCode = "404", description = "Project comment not found")
   public Response updateComment(
-      @Parameter(description = "ID of the comment to be updated", required = true) @PathParam("id") @NotNull Long id,
+      @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
+      @Parameter(description = "Number of the comment to be updated", required = true) @PathParam("commentNumber") @NotNull Long commentNumber,
       @Valid UpdateProjectCommentDTO dto) {
 
-    projectCommentService.update(id, dto);
-    return Response.ok().build();
+    ProjectCommentResponseDTO updatedComment = projectCommentService.update(projectId, commentNumber, dto);
+    return Response.ok(updatedComment).build();
   }
 
   @DELETE
-  @Path("/{id}")
+  @Path("/{commentNumber}")
   @Operation(summary = "Delete a project comment", description = "Removes a project comment by its ID (soft delete)")
   @APIResponse(responseCode = "204", description = "Project comment removed successfully")
   @APIResponse(responseCode = "404", description = "Project comment not found")
   public Response deleteComment(
-      @Parameter(description = "ID of the comment to be deleted", required = true) @PathParam("id") @NotNull Long id) {
+      @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
+      @Parameter(description = "Number of the comment to be deleted", required = true) @PathParam("commentNumber") @NotNull Long commentNumber) {
 
-    projectCommentService.delete(id);
+    projectCommentService.delete(projectId, commentNumber);
     return Response.noContent().build();
   }
 
   @GET
   @Path("/health")
+  @Produces(MediaType.TEXT_PLAIN)
   @Operation(summary = "Health check", description = "Returns the health status of the Project Comment service")
   @APIResponse(responseCode = "200", description = "Service is healthy")
   public Response health() {
@@ -116,8 +128,9 @@ public class ProjectCommentResource {
   @Path("/count")
   @Operation(summary = "Count active project comments per project", description = "Returns the total number of active project comments for a given project")
   @APIResponse(responseCode = "200", description = "Total number of active project comments per project returned successfully")
-  public Response countActiveComments() {
-    long count = projectCommentService.count();
+  public Response countActiveComments(
+      @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId) {
+    long count = projectCommentService.countByProjectId(projectId);
     return Response.ok(new CountResponse(count)).build();
   }
 
