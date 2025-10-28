@@ -8,8 +8,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.communication.dto.CreateNotificationDTO;
+import br.com.hub.connect.application.communication.dto.NotificationListResponse;
 import br.com.hub.connect.application.communication.dto.NotificationResponseDTO;
 import br.com.hub.connect.application.communication.service.NotificationService;
+import br.com.hub.connect.application.utils.CountResponse;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -41,8 +44,17 @@ public class NotificationResource {
       @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
 
-    List<NotificationResponseDTO> notifications = notificationService.findAll(page, size);
-    return Response.ok(notifications).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+    int pageIndex = page - 1;
+
+    List<NotificationResponseDTO> notifications = notificationService.findAll(pageIndex, size);
+
+    var totalCount = getActiveNotificationCount();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new NotificationListResponse(totalPages, notifications)).build();
   }
 
   @GET
@@ -94,8 +106,11 @@ public class NotificationResource {
   @Operation(summary = "Count notifications", description = "Returns the total number of notifications")
   @APIResponse(responseCode = "200", description = "Total number of notifications returned successfully")
   public Response countNotifications() {
-    long count = notificationService.count();
-    return Response.ok(count).build();
+    long count = getActiveNotificationCount();
+    return Response.ok(new CountResponse(count)).build();
   }
 
+  private long getActiveNotificationCount() {
+    return notificationService.count();
+  }
 }
