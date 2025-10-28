@@ -8,7 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.communication.dto.CreateNotificationDTO;
-import br.com.hub.connect.application.communication.dto.NotificationListResponse;
+import br.com.hub.connect.application.communication.dto.NotificationListResponseDTO;
 import br.com.hub.connect.application.communication.dto.NotificationResponseDTO;
 import br.com.hub.connect.application.communication.service.NotificationService;
 import br.com.hub.connect.application.utils.CountResponse;
@@ -54,7 +54,7 @@ public class NotificationResource {
     var totalCount = getActiveNotificationCount();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new NotificationListResponse(totalPages, notifications)).build();
+    return Response.ok(new NotificationListResponseDTO(totalPages, notifications)).build();
   }
 
   @GET
