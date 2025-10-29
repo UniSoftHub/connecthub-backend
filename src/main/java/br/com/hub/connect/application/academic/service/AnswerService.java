@@ -124,6 +124,16 @@ public class AnswerService {
         .collect(Collectors.toList());
   }
 
+  public List<AnswerResponseDTO> findWithFilters(Long topicId, Long authorId, int page, int size) {
+    if (topicId != null) {
+      return findByTopic(topicId, page, size);
+    } else if (authorId != null) {
+      return findByAuthor(authorId, page, size);
+    } else {
+      return findAll(page, size);
+    }
+  }
+
   @Transactional
   public AnswerResponseDTO like(@NotNull Long id) {
     Answer answer = Answer.findActiveById(id)
