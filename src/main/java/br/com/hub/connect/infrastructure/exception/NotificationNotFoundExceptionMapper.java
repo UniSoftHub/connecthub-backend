@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import br.com.hub.connect.domain.exception.NotificationNotFoundException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
+@Provider
 public class NotificationNotFoundExceptionMapper implements ExceptionMapper<NotificationNotFoundException> {
   private static final Logger logger = LoggerFactory.getLogger(NotificationNotFoundExceptionMapper.class);
 

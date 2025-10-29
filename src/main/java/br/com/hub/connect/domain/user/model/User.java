@@ -22,7 +22,8 @@ import jakarta.persistence.Table;
 public class User extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
-  public UserRole role;
+  @Column(nullable = false)
+  public UserRole role = UserRole.STUDENT;
 
   @Column(nullable = false)
   public String name;
