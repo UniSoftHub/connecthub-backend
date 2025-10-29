@@ -12,6 +12,7 @@ import br.com.hub.connect.application.academic.dto.answer.UpdateAnswerDTO;
 import br.com.hub.connect.application.academic.dto.answer.AnswerResponseDTO;
 import br.com.hub.connect.application.academic.dto.answer.AnswerListResponseDTO;
 import br.com.hub.connect.application.academic.service.AnswerService;
+import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -231,6 +232,4 @@ public class AnswerResource {
     return Response.ok(new CountResponse(count)).build();
   }
 
-  public record CountResponse(long count) {
-  }
 }
