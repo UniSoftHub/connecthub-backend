@@ -7,5 +7,6 @@ public record ProjectCommentResponseDTO(
     String text,
     Long authorId,
     LocalDateTime createdAt,
-    Long projectId) {
+    Long projectId,
+    Long projectCommentNumber) {
 }

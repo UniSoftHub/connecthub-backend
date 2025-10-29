@@ -30,6 +30,9 @@ public class ProjectComment extends BaseEntity {
   @JoinColumn(name = "author_id", nullable = false)
   public User author;
 
+  @Column(nullable = false)
+  public Long projectCommentNumber;
+
   @Override
   public String toString() {
     return String.format("ProjectComment{id=%d, text='%s', project_id='%s', author_id=%s}",
@@ -55,6 +58,10 @@ public class ProjectComment extends BaseEntity {
     return find("project.id = ?1 AND isActive = true", projectId)
         .page(page, size)
         .list();
+  }
+
+  public static long countByProjectId(Long projectId) {
+    return count("project.id = ?1", projectId);
   }
 
 }
