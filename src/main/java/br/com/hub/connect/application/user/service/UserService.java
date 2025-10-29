@@ -10,6 +10,7 @@ import br.com.hub.connect.domain.exception.EmailAlreadyExistsException;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
 import br.com.hub.connect.domain.user.enums.UserRole;
 import br.com.hub.connect.domain.user.model.User;
+import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -41,9 +42,8 @@ public class UserService {
     User user = new User();
     user.name = dto.name();
     user.email = dto.email();
-    // user.password = hashPassword(dto.password());
-    user.password = dto.password();
-    user.role = dto.role();
+    user.password = BcryptUtil.bcryptHash(dto.password());
+    user.role = dto.role() != null ? dto.role() : UserRole.STUDENT;
     user.xp = 0.0;
     user.level = 1;
 
@@ -56,23 +56,21 @@ public class UserService {
     User user = User.findActiveById(id)
         .orElseThrow(() -> new UserNotFoundException(id));
 
-    // Verifica email duplicado apenas se estiver sendo alterado
     if (dto.email() != null &&
         !dto.email().equals(user.email) &&
         User.existsByEmailActiveExcludingId(dto.email(), id)) {
       throw new EmailAlreadyExistsException(dto.email());
     }
 
-    // Atualiza apenas campos não nulos
     if (dto.name() != null) {
       user.name = dto.name();
     }
     if (dto.email() != null) {
       user.email = dto.email();
     }
-    // if (dto.password() != null && !dto.password().trim().isEmpty()) {
-    // user.password = hashPassword(dto.password());
-    // }
+    if (dto.password() != null && !dto.password().trim().isEmpty()) {
+      user.password = BcryptUtil.bcryptHash(dto.password());
+    }
     if (dto.role() != null) {
       user.role = dto.role();
     }
@@ -129,16 +127,6 @@ public class UserService {
         user.createdAt);
   }
 
-  @SuppressWarnings("unused")
-  private void hashPassword(String password) {
-    // return BCrypt.hashpw(password, BCrypt.gensalt());
-  }
-
-  public void verifyPassword(String password, String hashedPassword) {
-    // return BCrypt.checkpw(password, hashedPassword);
-  }
-
-  @SuppressWarnings("unused")
   private void updateUserLevel(User user) {
     int newLevel = (int) Math.floor(user.xp / 100.0) + 1;
     if (newLevel > user.level) {

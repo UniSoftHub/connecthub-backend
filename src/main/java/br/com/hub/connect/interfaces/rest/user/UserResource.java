@@ -9,7 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.user.dto.CreateUserDTO;
 import br.com.hub.connect.application.user.dto.UpdateUserDTO;
-import br.com.hub.connect.application.user.dto.UserListResponse;
+import br.com.hub.connect.application.user.dto.UserListResponseDTO;
 import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.application.user.service.UserService;
 import br.com.hub.connect.application.utils.CountResponse;
@@ -63,7 +63,7 @@ public class UserResource {
     var totalCount = getActiveUsersCount();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new UserListResponse(totalPages, users)).build();
+    return Response.ok(new UserListResponseDTO(totalPages, users)).build();
   }
 
   @GET
