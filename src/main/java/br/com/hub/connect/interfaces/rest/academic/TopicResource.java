@@ -10,7 +10,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import br.com.hub.connect.application.academic.dto.topic.CreateTopicDTO;
 import br.com.hub.connect.application.academic.dto.topic.UpdateTopicDTO;
 import br.com.hub.connect.application.academic.dto.topic.TopicResponseDTO;
+import br.com.hub.connect.application.academic.dto.topic.TopicListResponseDTO;
 import br.com.hub.connect.application.academic.service.TopicService;
+import br.com.hub.connect.application.utils.CountResponse;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.domain.academic.enums.TopicStatus;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -42,9 +45,9 @@ public class TopicResource {
   @Operation(summary = "List all active topics", description = "Returns a paged list of active topics")
   @APIResponse(responseCode = "200", description = "List of topics returned successfully")
   public Response getAllTopics(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("1") int page,
 
-      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
+      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("2") int size,
 
       @Parameter(description = "Filter by course ID") @QueryParam("courseId") Long courseId,
 
@@ -52,19 +55,21 @@ public class TopicResource {
 
       @Parameter(description = "Filter by status") @QueryParam("status") TopicStatus status) {
 
-    List<TopicResponseDTO> topics;
-
-    if (courseId != null) {
-      topics = topicService.findByCourse(courseId, page, size);
-    } else if (authorId != null) {
-      topics = topicService.findByAuthor(authorId, page, size);
-    } else if (status != null) {
-      topics = topicService.findByStatus(status, page, size);
-    } else {
-      topics = topicService.findAll(page, size);
+    if (page < 1) {
+      throw new PageNotFoundException();
     }
+    int pageIndex = page - 1;
 
-    return Response.ok(topics).build();
+    List<TopicResponseDTO> topics = topicService.findWithFilters(courseId, authorId, status, pageIndex, size);
+
+    var totalCount = getActiveTopicsCount();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new TopicListResponseDTO(totalPages, topics)).build();
+  }
+
+  private long getActiveTopicsCount() {
+    return topicService.count();
   }
 
   @GET
@@ -172,6 +177,4 @@ public class TopicResource {
     return Response.ok(new CountResponse(count)).build();
   }
 
-  public record CountResponse(long count) {
-  }
 }

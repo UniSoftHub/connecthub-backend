@@ -119,6 +119,18 @@ public class TopicService {
         .collect(Collectors.toList());
   }
 
+  public List<TopicResponseDTO> findWithFilters(Long courseId, Long authorId, TopicStatus status, int page, int size) {
+    if (courseId != null) {
+      return findByCourse(courseId, page, size);
+    } else if (authorId != null) {
+      return findByAuthor(authorId, page, size);
+    } else if (status != null) {
+      return findByStatus(status, page, size);
+    } else {
+      return findAll(page, size);
+    }
+  }
+
   public long count() {
     return Topic.countActive();
   }
