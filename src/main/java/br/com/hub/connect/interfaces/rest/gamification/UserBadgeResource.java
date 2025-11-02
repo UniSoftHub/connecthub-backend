@@ -8,8 +8,10 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.gamification.userBadge.dto.CreateUserBadgeDTO;
+import br.com.hub.connect.application.gamification.userBadge.dto.ListResponseUserBadgeDTO;
 import br.com.hub.connect.application.gamification.userBadge.dto.ResponseUserBadgeDTO;
 import br.com.hub.connect.application.gamification.userBadge.service.UserBadgeService;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -39,11 +41,21 @@ public class UserBadgeResource {
   @Operation(summary = "List all user badges", description = "Returns a paged list of user badges")
   @APIResponse(responseCode = "200", description = "List of user badges returned successfully")
   public Response getAllUserBadges(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
 
-    List<ResponseUserBadgeDTO> userBadges = userBadgeService.findAll(page, size);
-    return Response.ok(userBadges).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+
+    int pageIndex = page - 1;
+
+    List<ResponseUserBadgeDTO> userBadges = userBadgeService.findAll(pageIndex, size);
+
+    long totalCount = userBadgeService.count();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new ListResponseUserBadgeDTO(totalPages, userBadges)).build();
   }
 
   @GET
