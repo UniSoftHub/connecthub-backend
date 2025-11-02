@@ -56,15 +56,15 @@ public class ProjectCommentResource {
   }
 
   @GET
-  @Path("/{commentNumber}")
+  @Path("/{commentId}")
   @Operation(summary = "Find comment by ID per project", description = "Returns a specific comment by its ID for a given project")
   @APIResponse(responseCode = "200", description = "Project comment found")
   @APIResponse(responseCode = "404", description = "Project comment not found")
-  public Response getCommentByNumber(
+  public Response getCommentById(
       @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
-      @Parameter(description = "Number of the comment", required = true) @PathParam("commentNumber") @NotNull Long commentNumber) {
+      @Parameter(description = "ID of the comment", required = true) @PathParam("commentId") @NotNull Long commentId) {
 
-    ProjectCommentResponseDTO comment = projectCommentService.findCommentByNumberAndProjectId(projectId, commentNumber);
+    ProjectCommentResponseDTO comment = projectCommentService.findCommentByIdAndProjectId(projectId, commentId);
     return Response.ok(comment).build();
   }
 
@@ -81,37 +81,37 @@ public class ProjectCommentResource {
 
     return Response.status(Response.Status.CREATED)
         .location(uriInfo.getAbsolutePathBuilder()
-            .path(createdComment.projectCommentNumber().toString())
+            .path(createdComment.id().toString())
             .build())
         .entity(createdComment)
         .build();
   }
 
   @PATCH
-  @Path("/{commentNumber}")
+  @Path("/{commentId}")
   @Operation(summary = "Update a project comment")
   @APIResponse(responseCode = "200", description = "Project comment updated successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
   @APIResponse(responseCode = "404", description = "Project comment not found")
   public Response updateComment(
       @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
-      @Parameter(description = "Number of the comment to be updated", required = true) @PathParam("commentNumber") @NotNull Long commentNumber,
+      @Parameter(description = "ID of the comment to be updated", required = true) @PathParam("commentId") @NotNull Long commentId,
       @Valid UpdateProjectCommentDTO dto) {
 
-    ProjectCommentResponseDTO updatedComment = projectCommentService.update(projectId, commentNumber, dto);
+    ProjectCommentResponseDTO updatedComment = projectCommentService.update(projectId, commentId, dto);
     return Response.ok(updatedComment).build();
   }
 
   @DELETE
-  @Path("/{commentNumber}")
+  @Path("/{commentId}")
   @Operation(summary = "Delete a project comment", description = "Removes a project comment by its ID (soft delete)")
   @APIResponse(responseCode = "204", description = "Project comment removed successfully")
   @APIResponse(responseCode = "404", description = "Project comment not found")
   public Response deleteComment(
       @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
-      @Parameter(description = "Number of the comment to be deleted", required = true) @PathParam("commentNumber") @NotNull Long commentNumber) {
+      @Parameter(description = "ID of the comment to be deleted", required = true) @PathParam("commentId") @NotNull Long commentId) {
 
-    projectCommentService.delete(projectId, commentNumber);
+    projectCommentService.delete(projectId, commentId);
     return Response.noContent().build();
   }
 
