@@ -110,6 +110,15 @@ Utiliza extensivamente as features do Quarkus, incluindo:
 Outras dependências comuns do ecossistema Quarkus podem ser incluídas conforme necessidade.
 
 ---
+## Faça o Setup das chaves JWT
+
+1. Gerar chaves localmente(Linux):
+```bash
+mkdir -p src/main/resources/META-INF/resources
+
+openssl genrsa -out src/main/resources/privateKey.pem 2048
+openssl rsa -in src/main/resources/privateKey.pem -pubout -out src/main/resources/META-INF/resources/publicKey.pem
+```
 
 ## Como Executar
 
@@ -137,6 +146,10 @@ mvn quarkus:dev
 ./mvnw quarkus:dev
 ```
 Acesse a Dev UI em [http://localhost:8080/q/dev/](http://localhost:8080/q/dev/).
+
+
+
+2. As chaves são ignoradas pelo git (verificar .gitignore)
 
 ### Build e Execução
 
