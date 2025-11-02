@@ -16,7 +16,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class ProjectCommentService {
@@ -43,21 +42,41 @@ public class ProjectCommentService {
         .collect(Collectors.toList());
   }
 
-  public ProjectCommentResponseDTO findCommentByNumberAndProjectId(@NotNull Long projectId,
-      @NotNull Long commentNumber) {
-    ProjectComment comment = findActiveCommentEntityByNumber(projectId, commentNumber);
+  public List<ProjectCommentResponseDTO> findAllGlobal(int page, int size) {
+
+    if (page < 0)
+      page = 0;
+    if (size <= 0 || size > 100)
+      size = 10;
+
+    return ProjectComment.findAllActive(page, size)
+        .stream()
+        .map(this::toResponseDTO)
+        .collect(Collectors.toList());
+  }
+
+  public ProjectCommentResponseDTO findByIdGlobal(@NotNull Long commentId) {
+    ProjectComment comment = ProjectComment.findActiveById(commentId)
+        .orElseThrow(() -> new ProjectCommentNotFoundException(commentId));
     return toResponseDTO(comment);
   }
 
-  public ProjectComment findActiveCommentEntityByNumber(@NotNull Long projectId, @NotNull Long projectCommentNumber) {
-    return ProjectComment.find(
-        "project.id = ?1 AND projectCommentNumber = ?2 AND isActive = true",
-        projectId, projectCommentNumber)
+  public ProjectComment findActiveCommentEntityById(@NotNull Long projectId, @NotNull Long commentId) {
+    ProjectComment comment = ProjectComment.findActiveById(commentId)
+        .orElseThrow(() -> new ProjectCommentNotFoundException(commentId));
 
-        .firstResultOptional()
-        .map(entity -> (ProjectComment) entity)
-        .orElseThrow(() -> new NotFoundException(
-            String.format("Comment with number %d not found for project %d", projectCommentNumber, projectId)));
+    if (!comment.project.id.equals(projectId)) {
+      throw new ProjectCommentNotFoundException(commentId);
+    }
+
+    return comment;
+  }
+
+  public ProjectCommentResponseDTO findCommentByIdAndProjectId(@NotNull Long projectId, @NotNull Long commentId) {
+
+    ProjectComment comment = findActiveCommentEntityById(projectId, commentId);
+
+    return toResponseDTO(comment);
   }
 
   @Transactional
@@ -70,24 +89,20 @@ public class ProjectCommentService {
     User author = (User) User.findActiveById(dto.authorId())
         .orElseThrow(() -> new UserNotFoundException(dto.authorId()));
 
-    long currentCount = ProjectComment.countByProjectId(projectId);
-    long nextCommentNumber = currentCount + 1;
-
     ProjectComment comment = new ProjectComment();
     comment.text = dto.text();
     comment.project = project;
     comment.author = author;
-    comment.projectCommentNumber = nextCommentNumber;
 
     comment.persistAndFlush();
     return toResponseDTO(comment);
   }
 
   @Transactional
-  public ProjectCommentResponseDTO update(@NotNull Long projectId, @NotNull Long commentNumber,
+  public ProjectCommentResponseDTO update(@NotNull Long projectId, @NotNull Long commentId,
       @Valid UpdateProjectCommentDTO dto) {
 
-    ProjectComment comment = findActiveCommentEntityByNumber(projectId, commentNumber);
+    ProjectComment comment = findActiveCommentEntityById(projectId, commentId);
 
     if (dto.text() != null) {
       comment.text = dto.text();
@@ -104,8 +119,34 @@ public class ProjectCommentService {
   }
 
   @Transactional
-  public void delete(@NotNull Long projectId, @NotNull Long commentNumber) {
-    ProjectComment comment = findActiveCommentEntityByNumber(projectId, commentNumber);
+  public ProjectCommentResponseDTO updateGlobal(@NotNull Long commentId, @Valid UpdateProjectCommentDTO dto) {
+
+    ProjectComment comment = ProjectComment.findActiveById(commentId)
+        .orElseThrow(() -> new ProjectCommentNotFoundException(commentId));
+
+    if (dto.text() != null) {
+      comment.text = dto.text();
+    }
+    if (dto.authorId() != null) {
+      User newAuthor = (User) User.findActiveById(dto.authorId())
+          .orElseThrow(() -> new UserNotFoundException(dto.authorId()));
+      comment.author = newAuthor;
+    }
+
+    comment.persistAndFlush();
+    return toResponseDTO(comment);
+  }
+
+  @Transactional
+  public void delete(@NotNull Long projectId, @NotNull Long id) {
+    ProjectComment comment = findActiveCommentEntity(projectId, id);
+    comment.softDelete();
+  }
+
+  @Transactional
+  public void deleteGlobal(@NotNull Long commentId) {
+    ProjectComment comment = ProjectComment.findActiveById(commentId)
+        .orElseThrow(() -> new ProjectCommentNotFoundException(commentId));
     comment.softDelete();
   }
 
@@ -114,6 +155,10 @@ public class ProjectCommentService {
     projectService.findById(projectId);
 
     return ProjectComment.count("project.id", projectId);
+  }
+
+  public long countAllGlobal() {
+    return ProjectComment.countActive();
   }
 
   ProjectComment findActiveCommentEntity(@NotNull Long projectId, @NotNull Long commentId) {
@@ -133,7 +178,6 @@ public class ProjectCommentService {
         comment.text,
         comment.author.id,
         comment.createdAt,
-        comment.project.id,
-        comment.projectCommentNumber);
+        comment.project.id);
   }
 }
