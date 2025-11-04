@@ -8,9 +8,12 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.gamification.badge.dto.CreateBadgeDTO;
+import br.com.hub.connect.application.gamification.badge.dto.BadgeListResponse;
 import br.com.hub.connect.application.gamification.badge.dto.ResponseBadgeDTO;
 import br.com.hub.connect.application.gamification.badge.dto.UpdateBadgeDTO;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.application.gamification.badge.service.BadgeService;
+import br.com.hub.connect.application.utils.CountResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -40,18 +43,28 @@ public class BadgeResource {
   @GET
   @Operation(summary = "List all active badges", description = "Returns a paged list of active badges")
   @APIResponse(responseCode = "200", description = "List of badges returned successfully")
+  @APIResponse(responseCode = "400", description = "Invalid pagination parameters")
   public Response getAllBadges(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
 
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
 
       @Parameter(description = "Filter by criteria") @QueryParam("criteria") String criteria) {
 
-    List<ResponseBadgeDTO> badges = (criteria != null)
-        ? badgeService.findByCriteria(criteria, page, size)
-        : badgeService.findAll(page, size);
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
 
-    return Response.ok(badges).build();
+    int pageIndex = page - 1;
+
+    List<ResponseBadgeDTO> badges = (criteria != null)
+        ? badgeService.findByCriteria(criteria, pageIndex, size)
+        : badgeService.findAll(pageIndex, size);
+
+    long totalCount = badgeService.count();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new BadgeListResponse(totalPages, badges)).build();
   }
 
   @GET
@@ -113,12 +126,22 @@ public class BadgeResource {
   public Response searchBadgesByName(
       @Parameter(description = "Name to search for", required = true) @QueryParam("name") String name,
 
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
 
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
 
-    List<ResponseBadgeDTO> badges = badgeService.findByNameContaining(name, page, size);
-    return Response.ok(badges).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+
+    int pageIndex = page - 1;
+
+    List<ResponseBadgeDTO> badges = badgeService.findByNameContaining(name, pageIndex, size);
+
+    long totalCount = badgeService.count();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new BadgeListResponse(totalPages, badges)).build();
   }
 
   @GET
@@ -136,8 +159,5 @@ public class BadgeResource {
   public Response countActiveBadges() {
     long count = badgeService.count();
     return Response.ok(new CountResponse(count)).build();
-  }
-
-  public record CountResponse(long count) {
   }
 }
