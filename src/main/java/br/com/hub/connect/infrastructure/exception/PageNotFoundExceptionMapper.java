@@ -3,6 +3,7 @@ package br.com.hub.connect.infrastructure.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 
 import jakarta.ws.rs.core.Response;
@@ -18,11 +19,15 @@ public class PageNotFoundExceptionMapper implements ExceptionMapper<PageNotFound
   public Response toResponse(PageNotFoundException exception) {
     logger.warn("Page not found exception {}", exception.getMessage());
 
-    ErrorResponse error = new ErrorResponse(
+    ErrorResponse errorDetails = new ErrorResponse(
         "PAGE_NOT_FOUND_EXCEPTION",
         exception.getMessage(),
         400);
 
-    return Response.status(400).entity(error).build();
+    ApiResponse<ErrorResponse> response = ApiResponse.error(
+        "Page Not Found",
+        errorDetails);
+
+    return Response.status(400).entity(response).build();
   }
 }

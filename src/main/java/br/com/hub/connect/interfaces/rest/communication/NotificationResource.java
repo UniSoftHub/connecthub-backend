@@ -11,6 +11,7 @@ import br.com.hub.connect.application.communication.dto.CreateNotificationDTO;
 import br.com.hub.connect.application.communication.dto.NotificationListResponseDTO;
 import br.com.hub.connect.application.communication.dto.NotificationResponseDTO;
 import br.com.hub.connect.application.communication.service.NotificationService;
+import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
@@ -54,7 +55,10 @@ public class NotificationResource {
     var totalCount = getActiveNotificationCount();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new NotificationListResponseDTO(totalPages, notifications)).build();
+    NotificationListResponseDTO listResponse = new NotificationListResponseDTO(totalPages, notifications);
+
+    return Response.ok(
+        ApiResponse.success("Notifications retrieved sucessfully", listResponse)).build();
   }
 
   @GET
@@ -65,7 +69,9 @@ public class NotificationResource {
       @Parameter(description = "ID of the notification to be retrieved") @PathParam("id") Long id) {
 
     NotificationResponseDTO notification = notificationService.findById(id);
-    return Response.ok(notification).build();
+
+    return Response.ok(
+        ApiResponse.success("Notification found", notification)).build();
   }
 
   @POST
@@ -73,11 +79,13 @@ public class NotificationResource {
   @APIResponse(responseCode = "201", description = "Notification created and sent successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
   public Response createNotification(@Valid CreateNotificationDTO dto) {
-    NotificationResponseDTO notification = notificationService.create(dto);
 
-    return Response.created(
-        UriBuilder.fromPath("/api/notifications/{id}").build(notification.id()))
-        .entity(notification)
+    NotificationResponseDTO createdNotification = notificationService.create(dto);
+
+    return Response.status(Response.Status.CREATED)
+        .entity(ApiResponse.success("Notification created successfully", createdNotification))
+        .location(UriBuilder.fromPath("/api/notifications/{id}")
+            .build(createdNotification.id()))
         .build();
 
   }
@@ -85,12 +93,13 @@ public class NotificationResource {
   @DELETE
   @Path("/{id}")
   @Operation(summary = "Delete a notification", description = "Deletes a notification by its ID (soft delete)")
-  @APIResponse(responseCode = "204", description = "Notification deleted successfully")
+  @APIResponse(responseCode = "200", description = "Notification deleted successfully")
   public Response deleteNotification(
       @Parameter(description = "ID of the notification to be deleted") @PathParam("id") Long id) {
 
     notificationService.delete(id);
-    return Response.noContent().build();
+    return Response.ok(
+        ApiResponse.success("Notification deleted sucessfully")).build();
   }
 
   @GET
@@ -98,7 +107,8 @@ public class NotificationResource {
   @Operation(summary = "Health check", description = "Returns the health status of the Notification service")
   @APIResponse(responseCode = "200", description = "Service is healthy")
   public Response healthCheck() {
-    return Response.ok("Notification service is healthy").build();
+    return Response.ok(
+        ApiResponse.success("Notification service is healthy")).build();
   }
 
   @GET
@@ -107,7 +117,10 @@ public class NotificationResource {
   @APIResponse(responseCode = "200", description = "Total number of notifications returned successfully")
   public Response countNotifications() {
     long count = getActiveNotificationCount();
-    return Response.ok(new CountResponse(count)).build();
+    CountResponse countResponse = new CountResponse(count);
+
+    return Response.ok(
+        ApiResponse.success("Active notifications count retrieved", countResponse)).build();
   }
 
   private long getActiveNotificationCount() {

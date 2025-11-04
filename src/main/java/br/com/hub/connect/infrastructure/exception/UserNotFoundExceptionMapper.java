@@ -3,6 +3,7 @@ package br.com.hub.connect.infrastructure.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -16,11 +17,15 @@ public class UserNotFoundExceptionMapper implements ExceptionMapper<UserNotFound
   public Response toResponse(UserNotFoundException exception) {
     logger.warn("User not found: {}", exception.getMessage());
 
-    ErrorResponse error = new ErrorResponse(
+    ErrorResponse errorDetails = new ErrorResponse(
         "USER_NOT_FOUND",
         exception.getMessage(),
         404);
 
-    return Response.status(404).entity(error).build();
+    ApiResponse<ErrorResponse> response = ApiResponse.error(
+        "User Not Found",
+        errorDetails);
+
+    return Response.status(404).entity(response).build();
   }
 }
