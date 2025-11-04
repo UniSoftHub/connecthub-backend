@@ -12,9 +12,11 @@ import br.com.hub.connect.application.user.dto.UpdateUserDTO;
 import br.com.hub.connect.application.user.dto.UserListResponseDTO;
 import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.application.user.service.UserService;
+import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.domain.user.enums.UserRole;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -46,9 +48,7 @@ public class UserResource {
   @APIResponse(responseCode = "200", description = "List of users returned successfully")
   public Response getAllUsers(
       @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
-
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
-
       @Parameter(description = "Filter by role") @QueryParam("role") UserRole role) {
 
     if (page < 1) {
@@ -63,7 +63,10 @@ public class UserResource {
     var totalCount = getActiveUsersCount();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new UserListResponseDTO(totalPages, users)).build();
+    UserListResponseDTO listResponse = new UserListResponseDTO(totalPages, users);
+
+    return Response.ok(
+        ApiResponse.success("Users retrieved successfully", listResponse)).build();
   }
 
   @GET
@@ -75,7 +78,9 @@ public class UserResource {
       @Parameter(description = "ID of the user", required = true) @PathParam("id") @NotNull Long id) {
 
     UserResponseDTO user = userService.findById(id);
-    return Response.ok(user).build();
+
+    return Response.ok(
+        ApiResponse.success("User found", user)).build();
   }
 
   @POST
@@ -88,7 +93,7 @@ public class UserResource {
     UserResponseDTO createdUser = userService.create(dto);
 
     return Response.status(Response.Status.CREATED)
-        .entity(createdUser)
+        .entity(ApiResponse.success("User created successfully", createdUser))
         .location(UriBuilder.fromPath("/api/users/{id}")
             .build(createdUser.id()))
         .build();
@@ -105,19 +110,24 @@ public class UserResource {
       @Valid UpdateUserDTO dto) {
 
     UserResponseDTO updatedUser = userService.update(id, dto);
-    return Response.ok(updatedUser).build();
+
+    return Response.ok(
+        ApiResponse.success("User updated successfully", updatedUser)).build();
   }
 
   @DELETE
   @Path("/{id}")
+  @RolesAllowed({ "ADMIN" })
   @Operation(summary = "Delete a user", description = "Removes a user by its ID (soft delete)")
-  @APIResponse(responseCode = "204", description = "User removed successfully")
+  @APIResponse(responseCode = "200", description = "User removed successfully")
   @APIResponse(responseCode = "404", description = "User not found")
   public Response deleteUser(
       @Parameter(description = "ID of the user", required = true) @PathParam("id") @NotNull Long id) {
 
     userService.delete(id);
-    return Response.noContent().build();
+
+    return Response.ok(
+        ApiResponse.success("User deleted successfully")).build();
   }
 
   @POST
@@ -127,13 +137,13 @@ public class UserResource {
   @APIResponse(responseCode = "404", description = "User not found")
   public Response addExperience(
       @Parameter(description = "ID of the user", required = true) @PathParam("id") @NotNull Long id,
-
       @Parameter(description = "Experience points (default: 10)") @QueryParam("points") @DefaultValue("10") int points,
-
       @Parameter(description = "Experience reason") @QueryParam("reason") @DefaultValue("General activity") String reason) {
 
     UserResponseDTO updatedUser = userService.addExperience(id, points, reason);
-    return Response.ok(updatedUser).build();
+
+    return Response.ok(
+        ApiResponse.success("Experience added successfully", updatedUser)).build();
   }
 
   @GET
@@ -141,7 +151,8 @@ public class UserResource {
   @Operation(summary = "Health check", description = "Returns the health status of the User service")
   @APIResponse(responseCode = "200", description = "Service is healthy")
   public Response health() {
-    return Response.ok("User service is healthy").build();
+    return Response.ok(
+        ApiResponse.success("User service is healthy")).build();
   }
 
   @GET
@@ -150,7 +161,10 @@ public class UserResource {
   @APIResponse(responseCode = "200", description = "Total number of active users returned successfully")
   public Response countActiveUsers() {
     long count = getActiveUsersCount();
-    return Response.ok(new CountResponse(count)).build();
+    CountResponse countResponse = new CountResponse(count);
+
+    return Response.ok(
+        ApiResponse.success("Active users count retrieved", countResponse)).build();
   }
 
   private long getActiveUsersCount() {
