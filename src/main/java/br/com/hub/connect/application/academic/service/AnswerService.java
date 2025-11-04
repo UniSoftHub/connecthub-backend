@@ -127,11 +127,11 @@ public class AnswerService {
   public List<AnswerResponseDTO> findWithFilters(Long topicId, Long authorId, int page, int size) {
     if (topicId != null) {
       return findByTopic(topicId, page, size);
-    } else if (authorId != null) {
-      return findByAuthor(authorId, page, size);
-    } else {
-      return findAll(page, size);
     }
+    if (authorId != null) {
+      return findByAuthor(authorId, page, size);
+    }
+    return findAll(page, size);
   }
 
   @Transactional
