@@ -14,6 +14,7 @@ import br.com.hub.connect.application.communication.service.NotificationService;
 import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -39,6 +40,7 @@ public class NotificationResource {
   NotificationService notificationService;
 
   @GET
+  @RolesAllowed({ "ADMIN" })
   @Operation(summary = "List all notifications", description = "Returns a list of all notifications")
   @APIResponse(responseCode = "200", description = "List of notifications returned successfully")
   public Response getAllNotifications(
@@ -62,6 +64,7 @@ public class NotificationResource {
   }
 
   @GET
+  @RolesAllowed({ "ADMIN" })
   @Path("/{id}")
   @Operation(summary = "Find notification by ID", description = "Returns a notification by its ID")
   @APIResponse(responseCode = "200", description = "Notification found successfully")
@@ -75,6 +78,7 @@ public class NotificationResource {
   }
 
   @POST
+  @RolesAllowed({ "ADMIN" })
   @Operation(summary = "Send a new notification", description = "Creates and sends a new notification")
   @APIResponse(responseCode = "201", description = "Notification created and sent successfully")
   @APIResponse(responseCode = "400", description = "Invalid input data")
@@ -91,6 +95,7 @@ public class NotificationResource {
   }
 
   @DELETE
+  @RolesAllowed({ "ADMIN" })
   @Path("/{id}")
   @Operation(summary = "Delete a notification", description = "Deletes a notification by its ID (soft delete)")
   @APIResponse(responseCode = "200", description = "Notification deleted successfully")
@@ -103,6 +108,7 @@ public class NotificationResource {
   }
 
   @GET
+  @RolesAllowed({ "ADMIN" })
   @Path("/health")
   @Operation(summary = "Health check", description = "Returns the health status of the Notification service")
   @APIResponse(responseCode = "200", description = "Service is healthy")
@@ -112,6 +118,7 @@ public class NotificationResource {
   }
 
   @GET
+  @RolesAllowed({ "ADMIN" })
   @Path("/count")
   @Operation(summary = "Count notifications", description = "Returns the total number of notifications")
   @APIResponse(responseCode = "200", description = "Total number of notifications returned successfully")
