@@ -44,6 +44,7 @@ public class UserResource {
   UserService userService;
 
   @GET
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
   @Operation(summary = "List all active users", description = "Returns a paged list of active users")
   @APIResponse(responseCode = "200", description = "List of users returned successfully")
   public Response getAllUsers(
@@ -70,6 +71,7 @@ public class UserResource {
   }
 
   @GET
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/{id}")
   @Operation(summary = "Find user by ID")
   @APIResponse(responseCode = "200", description = "User found")
@@ -85,6 +87,7 @@ public class UserResource {
 
   @POST
   @Operation(summary = "Create a new user")
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
   @APIResponse(responseCode = "201", description = "User created successfully")
   @APIResponse(responseCode = "400", description = "Invalid data")
   @APIResponse(responseCode = "409", description = "Email already exists")
@@ -100,6 +103,7 @@ public class UserResource {
   }
 
   @PATCH
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/{id}")
   @Operation(summary = "Update an existing user")
   @APIResponse(responseCode = "200", description = "User updated successfully")
@@ -116,8 +120,8 @@ public class UserResource {
   }
 
   @DELETE
-  @Path("/{id}")
   @RolesAllowed({ "ADMIN" })
+  @Path("/{id}")
   @Operation(summary = "Delete a user", description = "Removes a user by its ID (soft delete)")
   @APIResponse(responseCode = "200", description = "User removed successfully")
   @APIResponse(responseCode = "404", description = "User not found")
@@ -131,6 +135,7 @@ public class UserResource {
   }
 
   @POST
+  @RolesAllowed({ "ADMIN" })
   @Path("/{id}/experience")
   @Operation(summary = "Add experience to user")
   @APIResponse(responseCode = "200", description = "Experience added successfully")
@@ -147,6 +152,7 @@ public class UserResource {
   }
 
   @GET
+  @RolesAllowed({ "ADMIN" })
   @Path("/health")
   @Operation(summary = "Health check", description = "Returns the health status of the User service")
   @APIResponse(responseCode = "200", description = "Service is healthy")
@@ -156,6 +162,7 @@ public class UserResource {
   }
 
   @GET
+  @RolesAllowed({ "ADMIN" })
   @Path("/count")
   @Operation(summary = "Count active users", description = "Returns the total number of active users")
   @APIResponse(responseCode = "200", description = "Total number of active users returned successfully")
