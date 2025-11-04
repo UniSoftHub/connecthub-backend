@@ -47,7 +47,7 @@ public class TopicResource {
   public Response getAllTopics(
       @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("1") int page,
 
-      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("2") int size,
+      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
 
       @Parameter(description = "Filter by course ID") @QueryParam("courseId") Long courseId,
 
