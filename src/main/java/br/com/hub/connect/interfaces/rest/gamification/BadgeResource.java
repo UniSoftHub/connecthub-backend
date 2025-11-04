@@ -8,11 +8,12 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.gamification.badge.dto.CreateBadgeDTO;
-import br.com.hub.connect.application.gamification.badge.dto.ListResponseBadgeDTO;
+import br.com.hub.connect.application.gamification.badge.dto.BadgeListResponse;
 import br.com.hub.connect.application.gamification.badge.dto.ResponseBadgeDTO;
 import br.com.hub.connect.application.gamification.badge.dto.UpdateBadgeDTO;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.application.gamification.badge.service.BadgeService;
+import br.com.hub.connect.application.utils.CountResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -63,7 +64,7 @@ public class BadgeResource {
     long totalCount = badgeService.count();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new ListResponseBadgeDTO(totalPages, badges)).build();
+    return Response.ok(new BadgeListResponse(totalPages, badges)).build();
   }
 
   @GET
@@ -140,7 +141,7 @@ public class BadgeResource {
     long totalCount = badgeService.count();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new ListResponseBadgeDTO(totalPages, badges)).build();
+    return Response.ok(new BadgeListResponse(totalPages, badges)).build();
   }
 
   @GET
@@ -158,8 +159,5 @@ public class BadgeResource {
   public Response countActiveBadges() {
     long count = badgeService.count();
     return Response.ok(new CountResponse(count)).build();
-  }
-
-  public record CountResponse(long count) {
   }
 }

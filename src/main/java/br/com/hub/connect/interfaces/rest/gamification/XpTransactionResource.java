@@ -8,10 +8,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.gamification.xpTransaction.dto.CreateXpTransactionDTO;
-import br.com.hub.connect.application.gamification.xpTransaction.dto.ListResponseXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.XpTransactionListResponse;
 import br.com.hub.connect.application.gamification.xpTransaction.dto.ResponseXpTransactionDTO;
 import br.com.hub.connect.application.gamification.xpTransaction.dto.UpdateXpTransactionDTO;
 import br.com.hub.connect.application.gamification.xpTransaction.service.XpTransactionService;
+import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -57,7 +58,7 @@ public class XpTransactionResource {
     long totalCount = xpTransactionService.count();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new ListResponseXpTransactionDTO(totalPages, xpTransactions)).build();
+    return Response.ok(new XpTransactionListResponse(totalPages, xpTransactions)).build();
   }
 
   @GET
@@ -104,7 +105,7 @@ public class XpTransactionResource {
     long totalCount = xpTransactionService.count();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
-    return Response.ok(new ListResponseXpTransactionDTO(totalPages, xpTransactions)).build();
+    return Response.ok(new XpTransactionListResponse(totalPages, xpTransactions)).build();
   }
 
   @POST
@@ -164,8 +165,5 @@ public class XpTransactionResource {
   public Response countXpTransactions() {
     long count = xpTransactionService.count();
     return Response.ok(new CountResponse(count)).build();
-  }
-
-  public record CountResponse(long count) {
   }
 }
