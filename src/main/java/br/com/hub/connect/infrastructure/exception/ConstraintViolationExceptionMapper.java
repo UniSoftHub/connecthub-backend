@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.com.hub.connect.application.utils.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -24,12 +25,16 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
         .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
         .collect(Collectors.toList());
 
-    ErrorResponse error = new ErrorResponse(
+    ErrorResponse errorDetails = new ErrorResponse(
         "VALIDATION_ERROR",
         "Invalid Data",
         400,
         errors);
 
-    return Response.status(400).entity(error).build();
+    ApiResponse<ErrorResponse> response = ApiResponse.error(
+        "Validation Error",
+        errorDetails);
+
+    return Response.status(400).entity(response).build();
   }
 }
