@@ -68,8 +68,6 @@ public class ProjectResource {
   @Operation(summary = "Create a new project")
   @APIResponse(responseCode = "201", description = "Project created successfully")
   @APIResponse(responseCode = "400", description = "Invalid data")
-  @APIResponse(responseCode = "409", description = "Conflict")
-  @APIResponse(responseCode = "500", description = "Internal server error")
   public Response createProject(@Valid CreateProjectDTO dto) {
 
     ProjectResponseDTO createdProject = projectService.create(dto);
@@ -86,8 +84,6 @@ public class ProjectResource {
   @Operation(summary = "Update an existing project")
   @APIResponse(responseCode = "200", description = "Project updated successfully")
   @APIResponse(responseCode = "404", description = "Project not found")
-  @APIResponse(responseCode = "409", description = "Conflict")
-  @APIResponse(responseCode = "500", description = "Internal server error")
   public Response updateProject(
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id,
       @Valid UpdateProjectDTO dto) {

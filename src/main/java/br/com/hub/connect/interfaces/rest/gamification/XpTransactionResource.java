@@ -8,9 +8,12 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import br.com.hub.connect.application.gamification.xpTransaction.dto.CreateXpTransactionDTO;
+import br.com.hub.connect.application.gamification.xpTransaction.dto.XpTransactionListResponse;
 import br.com.hub.connect.application.gamification.xpTransaction.dto.ResponseXpTransactionDTO;
 import br.com.hub.connect.application.gamification.xpTransaction.dto.UpdateXpTransactionDTO;
 import br.com.hub.connect.application.gamification.xpTransaction.service.XpTransactionService;
+import br.com.hub.connect.application.utils.CountResponse;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -41,11 +44,21 @@ public class XpTransactionResource {
   @Operation(summary = "List all XP transactions", description = "Returns a paged list of XP transactions")
   @APIResponse(responseCode = "200", description = "List of XP transactions returned successfully")
   public Response getAllXpTransactions(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
 
-    List<ResponseXpTransactionDTO> xpTransactions = xpTransactionService.findAll(page, size);
-    return Response.ok(xpTransactions).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+
+    int pageIndex = page - 1;
+
+    List<ResponseXpTransactionDTO> xpTransactions = xpTransactionService.findAll(pageIndex, size);
+
+    long totalCount = xpTransactionService.count();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new XpTransactionListResponse(totalPages, xpTransactions)).build();
   }
 
   @GET
@@ -77,11 +90,22 @@ public class XpTransactionResource {
   @APIResponse(responseCode = "200", description = "Search results returned successfully")
   public Response searchXpTransactionsByDescription(
       @Parameter(description = "Description to search for", required = true) @QueryParam("description") String description,
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
 
-    List<ResponseXpTransactionDTO> xpTransactions = xpTransactionService.findByDescription(description, page, size);
-    return Response.ok(xpTransactions).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+
+    int pageIndex = page - 1;
+
+    List<ResponseXpTransactionDTO> xpTransactions = xpTransactionService.findByDescription(description, pageIndex,
+        size);
+
+    long totalCount = xpTransactionService.count();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new XpTransactionListResponse(totalPages, xpTransactions)).build();
   }
 
   @POST
@@ -141,8 +165,5 @@ public class XpTransactionResource {
   public Response countXpTransactions() {
     long count = xpTransactionService.count();
     return Response.ok(new CountResponse(count)).build();
-  }
-
-  public record CountResponse(long count) {
   }
 }

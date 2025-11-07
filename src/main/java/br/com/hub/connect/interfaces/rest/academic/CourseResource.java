@@ -3,7 +3,10 @@ package br.com.hub.connect.interfaces.rest.academic;
 import br.com.hub.connect.application.academic.dto.course.CourseResponseDTO;
 import br.com.hub.connect.application.academic.dto.course.CreateCourseDTO;
 import br.com.hub.connect.application.academic.dto.course.UpdateCourseDTO;
+import br.com.hub.connect.application.academic.dto.course.CourseListResponseDTO;
 import br.com.hub.connect.application.academic.service.CourseService;
+import br.com.hub.connect.application.utils.CountResponse;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -39,9 +42,26 @@ public class CourseResource {
   @APIResponse(responseCode = "200", description = "List of courses returned successfully")
   public Response getAllCourses(
       @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
-      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
-    List<CourseResponseDTO> courses = this.courseService.findAll(page, size);
-    return Response.ok(courses).build();
+      @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size,
+      @Parameter(description = "Filter by semester") @QueryParam("semester") Integer semester) {
+
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+    int pageIndex = page - 1;
+
+    List<CourseResponseDTO> courses = (semester != null)
+        ? courseService.findBySemester(semester, pageIndex, size)
+        : courseService.findAll(pageIndex, size);
+
+    var totalCount = getActiveCoursesCount();
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+
+    return Response.ok(new CourseListResponseDTO(totalPages, courses)).build();
+  }
+
+  private long getActiveCoursesCount() {
+    return courseService.count();
   }
 
   @GET
@@ -105,6 +125,4 @@ public class CourseResource {
     return Response.ok(new CountResponse(count)).build();
   }
 
-  public static record CountResponse(long count) {
-  }
 }

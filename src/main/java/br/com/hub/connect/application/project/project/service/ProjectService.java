@@ -46,7 +46,7 @@ public class ProjectService {
     project.imageUrl = dto.imageUrl();
     project.author = User.findById(dto.authorId());
 
-    project.persist();
+    project.persistAndFlush();
     return toResponseDTO(project);
   }
 
