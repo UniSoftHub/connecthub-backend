@@ -34,6 +34,14 @@ public class User extends BaseEntity {
   @Column(nullable = false)
   public String password;
 
+  @Column(unique = true)
+  public String CPF;
+
+  public String phone;
+
+  @Column(unique = true)
+  public Long enrollmentId;
+
   public Double xp = 0.0;
   public Integer level = 1;
 
