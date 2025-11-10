@@ -1,10 +1,10 @@
 -- 1. USERS
-INSERT INTO users (id, role, name, email, password, xp, level, avatar_url, is_active, created_at, updated_at) VALUES
-(1, 'STUDENT', 'João Silva', 'joao.silva@estudante.edu.br', '$2a$10$hashedpassword1', 150.0, 2, 'https://avatar.com/joao', true, '2024-01-15 08:00:00', '2024-01-15 08:00:00'),
-(2, 'TEACHER', 'Prof. Maria Santos', 'maria.santos@professor.edu.br', '$2a$10$hashedpassword2', 500.0, 5, 'https://avatar.com/maria', true, '2024-01-10 09:00:00', '2024-01-10 09:00:00'),
-(3, 'STUDENT', 'Carlos Oliveira', 'carlos.oliveira@estudante.edu.br', '$2a$10$hashedpassword3', 75.0, 1, 'https://avatar.com/carlos', true, '2024-01-20 10:00:00', '2024-01-20 10:00:00'),
-(4, 'STUDENT', 'Ana Costa', 'ana.costa@estudante.edu.br', '$2a$10$hashedpassword4', 300.0, 3, 'https://avatar.com/ana', true, '2024-01-12 11:00:00', '2024-01-12 11:00:00'),
-(5, 'ADMIN', 'Admin Sistema', 'admin@sistema.edu.br', '$2a$10$hashedpassword5', 1000.0, 10, 'https://avatar.com/admin', true, '2024-01-01 12:00:00', '2024-01-01 12:00:00');
+INSERT INTO users (id, role, name, email, password, cpf, phone, enrollmentid, xp, level, avatar_url, is_active, created_at, updated_at) VALUES
+(1, 'STUDENT', 'João Silva', 'joao.silva@estudante.edu.br', '$2a$10$hashedpassword1', '12345678901', '11987654321', 202401, 150.0, 2, 'https://avatar.com/joao', true, '2024-01-15 08:00:00', '2024-01-15 08:00:00'),
+(2, 'TEACHER', 'Prof. Maria Santos', 'maria.santos@professor.edu.br', '$2a$10$hashedpassword2', '98765432109', '11912345678', NULL, 500.0, 5, 'https://avatar.com/maria', true, '2024-01-10 09:00:00', '2024-01-10 09:00:00'),
+(3, 'STUDENT', 'Carlos Oliveira', 'carlos.oliveira@estudante.edu.br', '$2a$10$hashedpassword3', '45678912301', '11976543210', 202402, 75.0, 1, 'https://avatar.com/carlos', true, '2024-01-20 10:00:00', '2024-01-20 10:00:00'),
+(4, 'STUDENT', 'Ana Costa', 'ana.costa@estudante.edu.br', '$2a$10$hashedpassword4', '78912345602', '11965432109', 202403, 300.0, 3, 'https://avatar.com/ana', true, '2024-01-12 11:00:00', '2024-01-12 11:00:00'),
+(5, 'ADMIN', 'Admin Sistema', 'admin@sistema.edu.br', '$2a$10$hashedpassword5', '32165498703', '11954321098', NULL, 1000.0, 10, 'https://avatar.com/admin', true, '2024-01-01 12:00:00', '2024-01-01 12:00:00');
 SELECT setval('users_seq', (SELECT MAX(id) FROM users), true);
 
 -- 2. COURSES

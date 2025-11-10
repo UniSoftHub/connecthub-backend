@@ -74,6 +74,15 @@ public class UserService {
     if (dto.role() != null) {
       user.role = dto.role();
     }
+    if (dto.CPF() != null) {
+      user.CPF = dto.CPF();
+    }
+    if (dto.enrollmentId() != null) {
+      user.enrollmentId = dto.enrollmentId();
+    }
+    if (dto.phone() != null) {
+      user.phone = dto.phone();
+    }
 
     user.persist();
     return toResponseDTO(user);
@@ -121,6 +130,9 @@ public class UserService {
         user.name,
         user.email,
         user.role,
+        user.enrollmentId,
+        user.CPF,
+        user.phone,
         user.xp,
         user.level,
         user.avatarUrl,
