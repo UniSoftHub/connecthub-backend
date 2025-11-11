@@ -26,7 +26,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import br.com.hub.connect.application.project.project.service.ProjectService;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.application.project.project.dto.CreateProjectDTO;
-import br.com.hub.connect.application.project.project.dto.ProjectListResponse;
+import br.com.hub.connect.application.project.project.dto.ProjectListResponseDTO;
 import br.com.hub.connect.application.project.project.dto.UpdateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
 import jakarta.ws.rs.QueryParam;
@@ -64,7 +64,7 @@ public class ProjectResource {
 
     List<ProjectResponseDTO> projects = projectService.findAll(pageIndex, size);
 
-    return Response.ok(new ProjectListResponse(totalPages, projects)).build();
+    return Response.ok(new ProjectListResponseDTO(totalPages, projects)).build();
   }
 
   @GET
