@@ -43,7 +43,7 @@ public class XpTransactionResource {
   XpTransactionService xpTransactionService;
 
   @GET
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN" })
   @Operation(summary = "List all XP transactions", description = "Returns a paged list of XP transactions")
   @APIResponse(responseCode = "200", description = "List of XP transactions returned successfully")
   public Response getAllXpTransactions(
@@ -68,7 +68,7 @@ public class XpTransactionResource {
   }
 
   @GET
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN" })
   @Path("/{id}")
   @Operation(summary = "Find XP transaction by ID")
   @APIResponse(responseCode = "200", description = "XP transaction found")
@@ -83,7 +83,7 @@ public class XpTransactionResource {
   }
 
   @GET
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "STUDENT" })
+  @RolesAllowed({ "ADMIN" })
   @Path("/user/{userId}")
   @Operation(summary = "Find XP transactions by user ID", description = "Returns all XP transactions for a specific user")
   @APIResponse(responseCode = "200", description = "XP transactions found")
@@ -97,7 +97,7 @@ public class XpTransactionResource {
   }
 
   @GET
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN" })
   @Path("/search")
   @Operation(summary = "Search XP transactions by description", description = "Returns XP transactions that contain the specified description")
   @APIResponse(responseCode = "200", description = "Search results returned successfully")
