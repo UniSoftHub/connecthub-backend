@@ -24,7 +24,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import br.com.hub.connect.application.project.project.service.ProjectService;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.application.project.project.dto.CreateProjectDTO;
+import br.com.hub.connect.application.project.project.dto.ProjectListResponse;
 import br.com.hub.connect.application.project.project.dto.UpdateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
 import jakarta.ws.rs.QueryParam;
@@ -43,13 +45,26 @@ public class ProjectResource {
   @Operation(summary = "List all active projects", description = "Returns a paged list of active projects")
   @APIResponse(responseCode = "200", description = "List of projects returned successfully")
   public Response getAllProjects(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
 
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size
 
   ) {
-    List<ProjectResponseDTO> projects = projectService.findAll(page, size);
-    return Response.ok(projects).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+    int pageIndex = page - 1;
+
+    long totalCount = projectService.count();
+
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+    if (totalPages == 0 && totalCount > 0) {
+      totalPages = 1;
+    }
+
+    List<ProjectResponseDTO> projects = projectService.findAll(pageIndex, size);
+
+    return Response.ok(new ProjectListResponse(totalPages, projects)).build();
   }
 
   @GET
