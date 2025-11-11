@@ -27,9 +27,11 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
 import br.com.hub.connect.application.project.projectComment.service.ProjectCommentService;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.application.project.projectComment.dto.CreateProjectCommentDTO;
 import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCommentDTO;
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
+import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentListResponseDTO;
 
 @Path("/api/projects/{projectId}/comments")
 @Produces(MediaType.APPLICATION_JSON)
@@ -49,10 +51,24 @@ public class ProjectCommentResource {
   @APIResponse(responseCode = "200", description = "List of comments returned successfully")
   public Response getCommentsByProjectId(
       @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId,
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
-    List<ProjectCommentResponseDTO> comments = projectCommentService.findByProjectId(projectId, page, size);
-    return Response.ok(comments).build();
+
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+    int pageIndex = page - 1;
+
+    long totalCount = projectCommentService.countByProjectId(projectId);
+
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+    if (totalPages == 0 && totalCount > 0) {
+      totalPages = 1;
+    }
+
+    List<ProjectCommentResponseDTO> comments = projectCommentService.findByProjectId(projectId, pageIndex, size);
+
+    return Response.ok(new ProjectCommentListResponseDTO(totalPages, comments)).build();
   }
 
   @GET
