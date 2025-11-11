@@ -29,6 +29,7 @@ import br.com.hub.connect.application.project.project.dto.CreateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectListResponseDTO;
 import br.com.hub.connect.application.project.project.dto.UpdateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
+import br.com.hub.connect.application.utils.ApiResponse;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
 
@@ -63,8 +64,10 @@ public class ProjectResource {
     }
 
     List<ProjectResponseDTO> projects = projectService.findAll(pageIndex, size);
+    ProjectListResponseDTO listResponse = new ProjectListResponseDTO(totalPages, projects);
 
-    return Response.ok(new ProjectListResponseDTO(totalPages, projects)).build();
+    return Response.ok(
+        ApiResponse.success("Projects retrieved successfully", listResponse)).build();
   }
 
   @GET
@@ -76,7 +79,8 @@ public class ProjectResource {
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
     ProjectResponseDTO project = projectService.findById(id);
-    return Response.ok(project).build();
+    return Response.ok(
+        ApiResponse.success("Project found", project)).build();
   }
 
   @POST
@@ -88,7 +92,7 @@ public class ProjectResource {
     ProjectResponseDTO createdProject = projectService.create(dto);
 
     return Response.status(Response.Status.CREATED)
-        .entity(createdProject)
+        .entity(ApiResponse.success("Project created successfully", createdProject))
         .location(UriBuilder.fromPath("/api/projects/{id}")
             .build(createdProject.id()))
         .build();
@@ -104,7 +108,8 @@ public class ProjectResource {
       @Valid UpdateProjectDTO dto) {
 
     ProjectResponseDTO updatedProject = projectService.update(id, dto);
-    return Response.ok(updatedProject).build();
+    return Response.ok(
+        ApiResponse.success("Project updated successfully", updatedProject)).build();
   }
 
   @DELETE
@@ -116,7 +121,8 @@ public class ProjectResource {
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
     projectService.delete(id);
-    return Response.noContent().build();
+    return Response.ok(
+        ApiResponse.success("Project deleted successfully")).build();
   }
 
   @GET
@@ -133,7 +139,9 @@ public class ProjectResource {
   @APIResponse(responseCode = "200", description = "Total number of active projects returned successfully")
   public Response countActiveProjects() {
     long count = projectService.count();
-    return Response.ok(new CountResponse(count)).build();
+    CountResponse countResponse = new CountResponse(count);
+    return Response.ok(
+        ApiResponse.success("Active projects count retrieved", countResponse)).build();
   }
 
   public record CountResponse(long count) {
