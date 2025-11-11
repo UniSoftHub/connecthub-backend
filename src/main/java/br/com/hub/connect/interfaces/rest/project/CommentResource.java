@@ -7,9 +7,11 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentListResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCommentDTO;
 import br.com.hub.connect.application.project.projectComment.service.ProjectCommentService;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +27,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/api/comments") 
+@Path("/api/comments")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Comments", description = "Global operations for all comments")
@@ -38,11 +40,24 @@ public class CommentResource {
     @Operation(summary = "List ALL comments (paginated)", description = "Returns a list of all comments in the system, with pagination.")
     @APIResponse(responseCode = "200", description = "List of comments returned successfully")
     public Response getAllComments(
-            @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
             @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
-        
-        List<ProjectCommentResponseDTO> comments = projectCommentService.findAllGlobal(page, size);
-        return Response.ok(comments).build();
+
+        if (page < 1) {
+            throw new PageNotFoundException();
+        }
+        int pageIndex = page - 1;
+
+        long totalCount = projectCommentService.countAllGlobal();
+
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+        if (totalPages == 0 && totalCount > 0) {
+            totalPages = 1;
+        }
+
+        List<ProjectCommentResponseDTO> comments = projectCommentService.findAllGlobal(pageIndex, size);
+
+        return Response.ok(new ProjectCommentListResponseDTO(totalPages, comments)).build();
     }
 
     @GET
@@ -91,5 +106,6 @@ public class CommentResource {
         return Response.ok(new CountResponse(count)).build();
     }
 
-    public record CountResponse(Long count) { }
+    public record CountResponse(Long count) {
+    }
 }
