@@ -118,6 +118,7 @@ public class ProjectService {
         user.xp,
         user.level,
         user.avatarUrl,
+        user.isActive,
         user.createdAt);
   }
 }

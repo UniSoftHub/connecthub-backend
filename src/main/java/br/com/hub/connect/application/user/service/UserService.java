@@ -136,6 +136,7 @@ public class UserService {
         user.xp,
         user.level,
         user.avatarUrl,
+        user.isActive,
         user.createdAt);
   }
 

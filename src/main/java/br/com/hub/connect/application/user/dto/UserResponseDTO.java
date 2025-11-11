@@ -14,5 +14,6 @@ public record UserResponseDTO(
     Double xp,
     Integer level,
     String avatarUrl,
+    Boolean isActive,
     LocalDateTime createdAt) {
 }
