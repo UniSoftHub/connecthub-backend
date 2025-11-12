@@ -20,6 +20,13 @@ import jakarta.validation.constraints.NotNull;
 public class UserService {
 
   public List<UserResponseDTO> findAll(int page, int size) {
+    return User.findAll(page, size)
+        .stream()
+        .map(this::toResponseDTO)
+        .collect(Collectors.toList());
+  }
+
+  public List<UserResponseDTO> findAllActive(int page, int size) {
     return User.findAllActive(page, size)
         .stream()
         .map(this::toResponseDTO)
@@ -120,7 +127,11 @@ public class UserService {
         .collect(Collectors.toList());
   }
 
-  public long count() {
+  public Long countAll() {
+    return User.countAll();
+  }
+
+  public long countActive() {
     return User.countActive();
   }
 
