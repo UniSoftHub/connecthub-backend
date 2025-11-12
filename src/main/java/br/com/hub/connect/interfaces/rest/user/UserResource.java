@@ -45,7 +45,7 @@ public class UserResource {
 
   @GET
   @RolesAllowed({ "ADMIN" })
-  @Operation(summary = "List all active users", description = "Returns a paged list of active users")
+  @Operation(summary = "List all users", description = "Returns a paged list of active users")
   @APIResponse(responseCode = "200", description = "List of users returned successfully")
   public Response getAllUsers(
       @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
@@ -61,7 +61,7 @@ public class UserResource {
         ? userService.findByRole(role, pageIndex, size)
         : userService.findAll(pageIndex, size);
 
-    var totalCount = getActiveUsersCount();
+    var totalCount = getAllUsersCount();
     int totalPages = (int) Math.ceil((double) totalCount / size);
 
     UserListResponseDTO listResponse = new UserListResponseDTO(totalPages, users);
@@ -87,7 +87,7 @@ public class UserResource {
 
     List<UserResponseDTO> users = (role != null)
         ? userService.findByRole(role, pageIndex, size)
-        : userService.findAll(pageIndex, size);
+        : userService.findAllActive(pageIndex, size);
 
     var totalCount = getActiveUsersCount();
     int totalPages = (int) Math.ceil((double) totalCount / size);
