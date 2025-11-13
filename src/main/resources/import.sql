@@ -11,11 +11,10 @@ INSERT INTO users (id, role, name, email, password, cpf, phone, enrollmentid, xp
 (9, 'STUDENT', 'Isabela Gomes', 'isabela.gomes@estudante.edu.br', '$2a$10$hashedpassword9', '44455566677', '11911110000', 202406, 210.0, 3, 'https://avatar.com/isabela', true, '2024-02-05 16:00:00', '2024-02-05 16:00:00'),
 (10, 'ADMIN', 'Gerente Financeiro', 'gerente@sistema.edu.br', '$2a$10$hashedpassword10', '00011122233', '11900009999', NULL, 1200.0, 12, 'https://avatar.com/gerente', true, '2023-12-01 17:00:00', '2023-12-01 17:00:00'),
 (11, 'TEACHER', 'Prof. Laura Bessa', 'laura.bessa@professor.edu.br', '$2a$10$hashedpassword12', '33322211100', '11977776666', NULL, 450.0, 5, 'https://avatar.com/laura', true, '2024-01-01 19:00:00', '2024-01-01 19:00:00'),
-(12, 'STUDENT', 'Lucas Pereira', 'lucas.pereira@estudante.edu.br', '$2a$10$hashedpassword14', '22233344455', '11955554444', 202409, 400.0, 4, 'https://avatar.com/lucas', true, '2024-02-20 21:00:00', '2024-02-20 21:00:00'),
+(12, 'STUDENT', 'Lucas Pereira', 'lucas.pereira@estudante.edu.br', '$2a$10$hashedpassword14', '22233344455', '11955554444', 202409, 400.0, 4, 'https://avatar.com/lucas', false, '2024-02-20 21:00:00', '2024-02-20 21:00:00'),
 (13, 'TEACHER', 'Prof. Bruno Oliveira', 'bruno.oliveira@professor.edu.br', '$2a$10$hashedpassword15', '77766655544', '11944443333', NULL, 800.0, 8, 'https://avatar.com/bruno', true, '2023-11-15 22:00:00', '2023-11-15 22:00:00'),
 (14, 'STUDENT', 'Sofia Batista', 'sofia.batista@estudante.edu.br', '$2a$10$hashedpassword16', '10120230340', '11933334444', 202410, 50.0, 1, 'https://avatar.com/sofia', true, '2024-03-01 07:30:00', '2024-03-01 07:30:00'),
-(15, 'ADMIN', 'Supervisor RH', 'supervisor.rh@sistema.edu.br', '$2a$10$hashedpassword17', '54321098765', '11922223333', NULL, 900e0, 9, 'https://avatar.com/supervisor', true, '2024-03-05 08:30:00', '2024-03-05 08:30:00');
-
+(15, 'ADMIN', 'Supervisor RH', 'supervisor.rh@sistema.edu.br', '$2a$10$hashedpassword17', '54321098765', '11922223333', NULL, 900e0, 9, 'https://avatar.com/supervisor', false, '2024-03-05 08:30:00', '2024-03-05 08:30:00');
 SELECT setval('users_seq', (SELECT MAX(id) FROM users), true);
 
 -- 2. COURSES
@@ -104,6 +103,5 @@ INSERT INTO project_comments (id, text, project_id, author_id, is_active, create
 (3, 'A API está muito bem documentada. Seria possível adicionar testes unitários?', 3, 2, true, '2024-02-11 11:30:00', '2024-02-11 11:30:00'),
 (4, 'Dashboard ficou incrível! Os gráficos estão muito informativos. Qual biblioteca usou?', 4, 1, true, '2024-02-16 10:15:00', '2024-02-16 10:15:00'),
 (5, 'App de fitness tem um design muito clean. Pretende adicionar integração com wearables?', 5, 4, true, '2024-02-19 12:45:00', '2024-02-19 12:45:00');
-SELECT setval('project_comments_seq', (SELECT MAX(id) FROM project_comments), true);
 SELECT setval('project_comments_seq', (SELECT MAX(id) FROM project_comments), true);
 

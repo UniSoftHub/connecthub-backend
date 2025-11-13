@@ -53,6 +53,9 @@ public class UserService {
     user.role = dto.role() != null ? dto.role() : UserRole.STUDENT;
     user.xp = 0.0;
     user.level = 1;
+    user.enrollmentId = dto.enrollmentId();
+    user.CPF = dto.CPF();
+    user.phone = dto.phone();
 
     user.persist();
     return toResponseDTO(user);
