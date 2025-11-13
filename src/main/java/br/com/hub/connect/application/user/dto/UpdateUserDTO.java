@@ -13,7 +13,7 @@ public record UpdateUserDTO(
 
     @Size(min = 11, max = 14, message = "CPF must be between 11 and 14 characters") String CPF,
 
-    @Size(min = 6, max = 6, message = "Enrolllment Id must have 6 characters") Long enrollmentId,
+    Long enrollmentId,
 
     String phone,
 
