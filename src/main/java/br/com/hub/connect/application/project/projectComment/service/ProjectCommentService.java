@@ -16,6 +16,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.ws.rs.ForbiddenException;
 
 @ApplicationScoped
 public class ProjectCommentService {
@@ -98,11 +100,30 @@ public class ProjectCommentService {
     return toResponseDTO(comment);
   }
 
+  private void checkUpdatePermissionOrThrow(ProjectComment comment, SecurityIdentity currentUser) {
+    Long requestingUserId;
+    try {
+
+      requestingUserId = Long.parseLong(currentUser.getPrincipal().getName());
+    } catch (NumberFormatException e) {
+      throw new ForbiddenException("Invalid user principal in token.");
+    }
+
+    boolean isOwner = comment.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+
+    if (isOwner || hasAdminRole) {
+      return;
+    }
+    throw new ForbiddenException("You do not have permission to update this comment.");
+  }
+
   @Transactional
   public ProjectCommentResponseDTO update(@NotNull Long projectId, @NotNull Long commentId,
-      @Valid UpdateProjectCommentDTO dto) {
+      @Valid UpdateProjectCommentDTO dto, SecurityIdentity currentUser) {
 
     ProjectComment comment = findActiveCommentEntityById(projectId, commentId);
+    checkUpdatePermissionOrThrow(comment, currentUser);
 
     if (dto.text() != null) {
       comment.text = dto.text();
@@ -137,9 +158,29 @@ public class ProjectCommentService {
     return toResponseDTO(comment);
   }
 
+  private void checkDeletePermissionOrThrow(ProjectComment comment, SecurityIdentity currentUser) {
+    Long requestingUserId;
+    try {
+
+      requestingUserId = Long.parseLong(currentUser.getPrincipal().getName());
+    } catch (NumberFormatException e) {
+      throw new ForbiddenException("Invalid user principal in token.");
+    }
+
+    boolean isOwner = comment.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+    boolean hasCoordinatorRole = currentUser.hasRole("COORDINATOR");
+
+    if (isOwner || hasAdminRole || hasCoordinatorRole) {
+      return;
+    }
+    throw new ForbiddenException("You do not have permission to delete this comment.");
+  }
+
   @Transactional
-  public void delete(@NotNull Long projectId, @NotNull Long id) {
+  public void delete(@NotNull Long projectId, @NotNull Long id, SecurityIdentity currentUser) {
     ProjectComment comment = findActiveCommentEntity(projectId, id);
+    checkDeletePermissionOrThrow(comment, currentUser);
     comment.softDelete();
   }
 
