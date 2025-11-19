@@ -7,9 +7,11 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentListResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCommentDTO;
 import br.com.hub.connect.application.project.projectComment.service.ProjectCommentService;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -24,11 +26,14 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import br.com.hub.connect.application.utils.ApiResponse;
+import jakarta.annotation.security.RolesAllowed;
 
-@Path("/api/comments") 
+@Path("/api/comments")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Comments", description = "Global operations for all comments")
+@RolesAllowed({ "ADMIN" })
 public class CommentResource {
 
     @Inject
@@ -38,11 +43,26 @@ public class CommentResource {
     @Operation(summary = "List ALL comments (paginated)", description = "Returns a list of all comments in the system, with pagination.")
     @APIResponse(responseCode = "200", description = "List of comments returned successfully")
     public Response getAllComments(
-            @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
             @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size) {
-        
-        List<ProjectCommentResponseDTO> comments = projectCommentService.findAllGlobal(page, size);
-        return Response.ok(comments).build();
+
+        if (page < 1) {
+            throw new PageNotFoundException();
+        }
+        int pageIndex = page - 1;
+
+        long totalCount = projectCommentService.countAllGlobal();
+
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+        if (totalPages == 0 && totalCount > 0) {
+            totalPages = 1;
+        }
+
+        List<ProjectCommentResponseDTO> comments = projectCommentService.findAllGlobal(pageIndex, size);
+        ProjectCommentListResponseDTO listResponse = new ProjectCommentListResponseDTO(totalPages, comments);
+
+        return Response.ok(
+                ApiResponse.success("Comments retrieved successfully", listResponse)).build();
     }
 
     @GET
@@ -54,7 +74,8 @@ public class CommentResource {
             @Parameter(description = "Global ID of the comment", required = true) @PathParam("id") @NotNull Long id) {
 
         ProjectCommentResponseDTO comment = projectCommentService.findByIdGlobal(id);
-        return Response.ok(comment).build();
+        return Response.ok(
+                ApiResponse.success("Comment found", comment)).build();
     }
 
     @PATCH
@@ -67,7 +88,8 @@ public class CommentResource {
             @Valid UpdateProjectCommentDTO dto) {
 
         ProjectCommentResponseDTO updatedComment = projectCommentService.updateGlobal(id, dto);
-        return Response.ok(updatedComment).build();
+        return Response.ok(
+                ApiResponse.success("Comment updated successfully", updatedComment)).build();
     }
 
     @DELETE
@@ -79,7 +101,8 @@ public class CommentResource {
             @Parameter(description = "Global ID of the comment to be deleted", required = true) @PathParam("id") @NotNull Long id) {
 
         projectCommentService.deleteGlobal(id);
-        return Response.noContent().build();
+        return Response.ok(
+                ApiResponse.success("Comment deleted successfully")).build();
     }
 
     @GET
@@ -88,8 +111,11 @@ public class CommentResource {
     @APIResponse(responseCode = "200", description = "Total number of active project comments returned successfully")
     public Response countActiveComments() {
         long count = projectCommentService.countAllGlobal();
-        return Response.ok(new CountResponse(count)).build();
+        CountResponse countResponse = new CountResponse(count);
+        return Response.ok(
+                ApiResponse.success("Comment count retrieved", countResponse)).build();
     }
 
-    public record CountResponse(Long count) { }
+    public record CountResponse(Long count) {
+    }
 }
