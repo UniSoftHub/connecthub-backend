@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import br.com.hub.connect.domain.user.model.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.ws.rs.ForbiddenException;
 
 @ApplicationScoped
 public class ProjectService {
@@ -50,10 +52,34 @@ public class ProjectService {
     return toResponseDTO(project);
   }
 
+  private void checkUpdatePermissionOrThrow(Project project, SecurityIdentity currentUser) {
+
+    Long requestingUserId;
+    try {
+      requestingUserId = Long.parseLong(currentUser.getPrincipal().getName());
+    } catch (NumberFormatException e) {
+
+      throw new ForbiddenException("Invalid user principal in token.");
+    }
+
+    boolean isOwner = project.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+
+    if (isOwner || hasAdminRole) {
+      return;
+    }
+
+    // 3. Se não, lança o erro 403
+    throw new ForbiddenException("You do not have permission to update this project.");
+  }
+
   @Transactional
-  public ProjectResponseDTO update(@NotNull @Positive Long id, @Valid UpdateProjectDTO dto) {
+  public ProjectResponseDTO update(@NotNull @Positive Long id, @Valid UpdateProjectDTO dto,
+      SecurityIdentity currentUser) {
     Project project = Project.findActiveById(id)
         .orElseThrow(() -> new ProjectNotFoundException(id));
+
+    checkUpdatePermissionOrThrow(project, currentUser);
 
     if (dto.name() != null) {
       project.name = dto.name();
@@ -81,10 +107,31 @@ public class ProjectService {
     return toResponseDTO(project);
   }
 
+  private void checkDeletePermissionOrThrow(Project project, SecurityIdentity currentUser) {
+
+    Long requestingUserId;
+    try {
+      requestingUserId = Long.parseLong(currentUser.getPrincipal().getName());
+    } catch (NumberFormatException e) {
+      throw new ForbiddenException("Invalid user principal in token.");
+    }
+
+    boolean isOwner = project.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+    boolean hasCoordinatorRole = currentUser.hasRole("COORDINATOR");
+
+    if (isOwner || hasAdminRole || hasCoordinatorRole) {
+      return;
+    }
+
+    throw new ForbiddenException("You do not have permission to delete this project.");
+  }
+
   @Transactional
-  public void delete(@NotNull @Positive Long id) {
+  public void delete(@NotNull @Positive Long id, SecurityIdentity currentUser) {
     Project project = Project.findActiveById(id)
         .orElseThrow(() -> new ProjectNotFoundException(id));
+    checkDeletePermissionOrThrow(project, currentUser);
     project.isActive = false;
     project.persist();
   }
