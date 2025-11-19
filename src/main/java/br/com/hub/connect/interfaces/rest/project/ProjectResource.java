@@ -32,6 +32,8 @@ import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
 import br.com.hub.connect.application.utils.ApiResponse;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
 
 @Path("/api/projects")
 @Produces(MediaType.APPLICATION_JSON)
@@ -41,6 +43,9 @@ public class ProjectResource {
 
   @Inject
   ProjectService projectService;
+
+  @Inject
+  SecurityIdentity securityIdentity;
 
   @GET
   @Operation(summary = "List all active projects", description = "Returns a paged list of active projects")
@@ -83,6 +88,7 @@ public class ProjectResource {
         ApiResponse.success("Project found", project)).build();
   }
 
+  @Authenticated
   @POST
   @Operation(summary = "Create a new project")
   @APIResponse(responseCode = "201", description = "Project created successfully")
@@ -98,6 +104,7 @@ public class ProjectResource {
         .build();
   }
 
+  @Authenticated
   @PATCH
   @Path("/{id}")
   @Operation(summary = "Update an existing project")
@@ -107,11 +114,12 @@ public class ProjectResource {
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id,
       @Valid UpdateProjectDTO dto) {
 
-    ProjectResponseDTO updatedProject = projectService.update(id, dto);
+    ProjectResponseDTO updatedProject = projectService.update(id, dto, securityIdentity);
     return Response.ok(
         ApiResponse.success("Project updated successfully", updatedProject)).build();
   }
 
+  @Authenticated
   @DELETE
   @Path("/{id}")
   @Operation(summary = "Delete a project", description = "Removes a project by its ID (soft delete)")
@@ -120,7 +128,7 @@ public class ProjectResource {
   public Response deleteProject(
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
-    projectService.delete(id);
+    projectService.delete(id, securityIdentity);
     return Response.ok(
         ApiResponse.success("Project deleted successfully")).build();
   }
