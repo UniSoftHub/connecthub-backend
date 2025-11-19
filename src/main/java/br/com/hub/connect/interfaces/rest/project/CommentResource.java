@@ -27,11 +27,13 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import br.com.hub.connect.application.utils.ApiResponse;
+import jakarta.annotation.security.RolesAllowed;
 
 @Path("/api/comments")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Comments", description = "Global operations for all comments")
+@RolesAllowed({ "ADMIN" })
 public class CommentResource {
 
     @Inject
