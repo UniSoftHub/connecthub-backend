@@ -100,7 +100,7 @@ public class AnswerResource {
   }
 
   @PATCH
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "AUTHOR" })
   @Path("/{id}")
   @Operation(summary = "Update an existing answer")
   @APIResponse(responseCode = "200", description = "Answer updated successfully")
@@ -191,7 +191,7 @@ public class AnswerResource {
   }
 
   @POST
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "ATHOR" })
   @Path("/{id}/mark-solution")
   @Operation(summary = "Mark answer as solution")
   @APIResponse(responseCode = "200", description = "Answer marked as solution successfully")
