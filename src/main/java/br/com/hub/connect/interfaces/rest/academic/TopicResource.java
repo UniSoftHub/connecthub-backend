@@ -103,7 +103,7 @@ public class TopicResource {
   }
 
   @PATCH
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "AUTHOR" })
+  @RolesAllowed({ "ADMIN", "AUTHOR" })
   @Path("/{id}")
   @Operation(summary = "Update an existing topic")
   @APIResponse(responseCode = "200", description = "Topic updated successfully")
@@ -119,7 +119,7 @@ public class TopicResource {
   }
 
   @DELETE
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "AUTHOR" })
+  @RolesAllowed({ "ADMIN", "AUTHOR" })
   @Path("/{id}")
   @Operation(summary = "Delete a topic", description = "Removes a topic by its ID (soft delete)")
   @APIResponse(responseCode = "200", description = "Topic removed successfully")
