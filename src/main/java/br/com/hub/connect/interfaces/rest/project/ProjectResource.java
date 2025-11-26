@@ -24,11 +24,16 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import br.com.hub.connect.application.project.project.service.ProjectService;
+import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.application.project.project.dto.CreateProjectDTO;
+import br.com.hub.connect.application.project.project.dto.ProjectListResponseDTO;
 import br.com.hub.connect.application.project.project.dto.UpdateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
+import br.com.hub.connect.application.utils.ApiResponse;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
 
 @Path("/api/projects")
 @Produces(MediaType.APPLICATION_JSON)
@@ -39,17 +44,35 @@ public class ProjectResource {
   @Inject
   ProjectService projectService;
 
+  @Inject
+  SecurityIdentity securityIdentity;
+
   @GET
   @Operation(summary = "List all active projects", description = "Returns a paged list of active projects")
   @APIResponse(responseCode = "200", description = "List of projects returned successfully")
   public Response getAllProjects(
-      @Parameter(description = "Page number (default: 0)") @QueryParam("page") @DefaultValue("0") int page,
+      @Parameter(description = "Page number (default: 1)") @QueryParam("page") @DefaultValue("1") int page,
 
       @Parameter(description = "Page size (default: 10)") @QueryParam("size") @DefaultValue("10") int size
 
   ) {
-    List<ProjectResponseDTO> projects = projectService.findAll(page, size);
-    return Response.ok(projects).build();
+    if (page < 1) {
+      throw new PageNotFoundException();
+    }
+    int pageIndex = page - 1;
+
+    long totalCount = projectService.count();
+
+    int totalPages = (int) Math.ceil((double) totalCount / size);
+    if (totalPages == 0 && totalCount > 0) {
+      totalPages = 1;
+    }
+
+    List<ProjectResponseDTO> projects = projectService.findAll(pageIndex, size);
+    ProjectListResponseDTO listResponse = new ProjectListResponseDTO(totalPages, projects);
+
+    return Response.ok(
+        ApiResponse.success("Projects retrieved successfully", listResponse)).build();
   }
 
   @GET
@@ -61,9 +84,11 @@ public class ProjectResource {
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
     ProjectResponseDTO project = projectService.findById(id);
-    return Response.ok(project).build();
+    return Response.ok(
+        ApiResponse.success("Project found", project)).build();
   }
 
+  @Authenticated
   @POST
   @Operation(summary = "Create a new project")
   @APIResponse(responseCode = "201", description = "Project created successfully")
@@ -73,12 +98,13 @@ public class ProjectResource {
     ProjectResponseDTO createdProject = projectService.create(dto);
 
     return Response.status(Response.Status.CREATED)
-        .entity(createdProject)
+        .entity(ApiResponse.success("Project created successfully", createdProject))
         .location(UriBuilder.fromPath("/api/projects/{id}")
             .build(createdProject.id()))
         .build();
   }
 
+  @Authenticated
   @PATCH
   @Path("/{id}")
   @Operation(summary = "Update an existing project")
@@ -88,10 +114,12 @@ public class ProjectResource {
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id,
       @Valid UpdateProjectDTO dto) {
 
-    ProjectResponseDTO updatedProject = projectService.update(id, dto);
-    return Response.ok(updatedProject).build();
+    ProjectResponseDTO updatedProject = projectService.update(id, dto, securityIdentity);
+    return Response.ok(
+        ApiResponse.success("Project updated successfully", updatedProject)).build();
   }
 
+  @Authenticated
   @DELETE
   @Path("/{id}")
   @Operation(summary = "Delete a project", description = "Removes a project by its ID (soft delete)")
@@ -100,8 +128,9 @@ public class ProjectResource {
   public Response deleteProject(
       @Parameter(description = "ID of the project", required = true) @PathParam("id") @NotNull Long id) {
 
-    projectService.delete(id);
-    return Response.noContent().build();
+    projectService.delete(id, securityIdentity);
+    return Response.ok(
+        ApiResponse.success("Project deleted successfully")).build();
   }
 
   @GET
@@ -118,7 +147,9 @@ public class ProjectResource {
   @APIResponse(responseCode = "200", description = "Total number of active projects returned successfully")
   public Response countActiveProjects() {
     long count = projectService.count();
-    return Response.ok(new CountResponse(count)).build();
+    CountResponse countResponse = new CountResponse(count);
+    return Response.ok(
+        ApiResponse.success("Active projects count retrieved", countResponse)).build();
   }
 
   public record CountResponse(long count) {
