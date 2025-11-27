@@ -13,10 +13,12 @@ import br.com.hub.connect.domain.exception.AnswerNotFoundException;
 import br.com.hub.connect.domain.exception.TopicNotFoundException;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
 import br.com.hub.connect.domain.user.model.User;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.ForbiddenException;
 
 @ApplicationScoped
 public class AnswerService {
@@ -36,14 +38,14 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDTO create(@Valid CreateAnswerDTO dto) {
-    // Verifica se o tópico existe
+  public AnswerResponseDTO create(@Valid CreateAnswerDTO dto, SecurityIdentity currentUser) {
+    Long authorId = getUserIdFromToken(currentUser);
+
     Topic topic = Topic.findActiveById(dto.topicId())
         .orElseThrow(() -> new TopicNotFoundException(dto.topicId()));
 
-    // Verifica se o autor existe
-    User author = User.findActiveById(dto.authorId())
-        .orElseThrow(() -> new UserNotFoundException(dto.authorId()));
+    User author = User.findActiveById(authorId)
+        .orElseThrow(() -> new UserNotFoundException(authorId));
 
     Answer answer = new Answer();
     answer.content = dto.content();
@@ -55,7 +57,6 @@ public class AnswerService {
 
     answer.persist();
 
-    // Atualiza status do tópico para ANSWERED se for a primeira resposta
     if (topic.status == TopicStatus.NOT_ANSWERED) {
       topic.status = TopicStatus.SOLVED;
       topic.persist();
@@ -65,16 +66,16 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDTO update(@NotNull Long id, @Valid UpdateAnswerDTO dto) {
+  public AnswerResponseDTO update(@NotNull Long id, @Valid UpdateAnswerDTO dto, SecurityIdentity currentUser) {
     Answer answer = Answer.findActiveById(id)
         .orElseThrow(() -> new AnswerNotFoundException(id));
 
-    // Atualiza apenas campos não nulos
+    checkUpdatePermissionOrThrow(answer, currentUser);
+
     if (dto.content() != null) {
       answer.content = dto.content();
     }
     if (dto.isSolution() != null) {
-      // Se marcar como solução, desmarca outras soluções do mesmo tópico
       if (dto.isSolution()) {
         markAsSolution(answer);
       } else {
@@ -87,14 +88,15 @@ public class AnswerService {
   }
 
   @Transactional
-  public void delete(@NotNull Long id) {
+  public void delete(@NotNull Long id, SecurityIdentity currentUser) {
     Answer answer = Answer.findActiveById(id)
         .orElseThrow(() -> new AnswerNotFoundException(id));
+
+    checkDeletePermissionOrThrow(answer, currentUser);
 
     answer.softDelete();
     answer.persist();
 
-    // Verifica se ainda existem respostas ativas para o tópico
     long remainingAnswers = Answer.countByTopic(answer.topic.id);
     if (remainingAnswers == 0) {
       answer.topic.status = TopicStatus.NOT_ANSWERED;
@@ -103,7 +105,6 @@ public class AnswerService {
   }
 
   public List<AnswerResponseDTO> findByTopic(Long topicId, int page, int size) {
-    // Verifica se o tópico existe
     Topic.findActiveById(topicId)
         .orElseThrow(() -> new TopicNotFoundException(topicId));
 
@@ -114,7 +115,6 @@ public class AnswerService {
   }
 
   public List<AnswerResponseDTO> findByAuthor(Long authorId, int page, int size) {
-    // Verifica se o autor existe
     User.findActiveById(authorId)
         .orElseThrow(() -> new UserNotFoundException(authorId));
 
@@ -190,16 +190,13 @@ public class AnswerService {
   }
 
   private void markAsSolution(Answer answer) {
-    // Remove solução anterior do tópico
     Answer.findSolutionByTopic(answer.topic.id).ifPresent(oldSolution -> {
       oldSolution.isSolution = false;
       oldSolution.persist();
     });
 
-    // Marca como solução
     answer.isSolution = true;
 
-    // Atualiza status do tópico
     answer.topic.status = TopicStatus.SOLVED;
     answer.topic.persist();
   }
@@ -218,6 +215,35 @@ public class AnswerService {
 
   public long countSolutionsByAuthor(Long authorId) {
     return Answer.countSolutionsByAuthor(authorId);
+  }
+
+  private Long getUserIdFromToken(SecurityIdentity currentUser) {
+    try {
+      return Long.parseLong(currentUser.getPrincipal().getName());
+    } catch (NumberFormatException e) {
+      throw new ForbiddenException("Invalid user principal in token.");
+    }
+  }
+
+  private void checkUpdatePermissionOrThrow(Answer answer, SecurityIdentity currentUser) {
+    Long requestingUserId = getUserIdFromToken(currentUser);
+    boolean isOwner = answer.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+
+    if (!isOwner && !hasAdminRole) {
+      throw new ForbiddenException("You do not have permission to update this answer.");
+    }
+  }
+
+  private void checkDeletePermissionOrThrow(Answer answer, SecurityIdentity currentUser) {
+    Long requestingUserId = getUserIdFromToken(currentUser);
+    boolean isOwner = answer.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+    boolean hasCoordinatorRole = currentUser.hasRole("COORDINATOR");
+
+    if (!isOwner && !hasAdminRole && !hasCoordinatorRole) {
+      throw new ForbiddenException("You do not have permission to delete this answer.");
+    }
   }
 
   private AnswerResponseDTO toResponseDTO(Answer answer) {

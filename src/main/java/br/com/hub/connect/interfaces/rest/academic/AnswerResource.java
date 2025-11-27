@@ -15,6 +15,7 @@ import br.com.hub.connect.application.academic.service.AnswerService;
 import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
@@ -41,6 +43,9 @@ public class AnswerResource {
 
   @Inject
   AnswerService answerService;
+
+  @Context
+  SecurityIdentity securityIdentity;
 
   @GET
   @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "STUDENT" })
@@ -79,7 +84,8 @@ public class AnswerResource {
 
     AnswerResponseDTO answer = answerService.findById(id);
 
-    return Response.ok(answer).build();
+    return Response.ok(
+        ApiResponse.success("Answer found", answer)).build();
   }
 
   @POST
@@ -87,10 +93,10 @@ public class AnswerResource {
   @Operation(summary = "Create a new answer")
   @APIResponse(responseCode = "201", description = "Answer created successfully")
   @APIResponse(responseCode = "400", description = "Invalid data")
-  @APIResponse(responseCode = "404", description = "Topic or author not found")
+  @APIResponse(responseCode = "404", description = "Topic not found")
   public Response createAnswer(@Valid CreateAnswerDTO dto) {
 
-    AnswerResponseDTO createdAnswer = answerService.create(dto);
+    AnswerResponseDTO createdAnswer = answerService.create(dto, securityIdentity);
 
     return Response.status(Response.Status.CREATED)
         .entity(ApiResponse.success("Answer created successfully", createdAnswer))
@@ -100,31 +106,33 @@ public class AnswerResource {
   }
 
   @PATCH
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN", "STUDENT" })
   @Path("/{id}")
   @Operation(summary = "Update an existing answer")
   @APIResponse(responseCode = "200", description = "Answer updated successfully")
+  @APIResponse(responseCode = "403", description = "Forbidden - not the owner")
   @APIResponse(responseCode = "404", description = "Answer not found")
   public Response updateAnswer(
       @Parameter(description = "ID of the answer", required = true) @PathParam("id") @NotNull Long id,
       @Valid UpdateAnswerDTO dto) {
 
-    AnswerResponseDTO updatedAnswer = answerService.update(id, dto);
+    AnswerResponseDTO updatedAnswer = answerService.update(id, dto, securityIdentity);
 
     return Response.ok(
         ApiResponse.success("Answer updated successfully", updatedAnswer)).build();
   }
 
   @DELETE
-  @RolesAllowed({ "ADMIN" })
+  @RolesAllowed({ "ADMIN", "STUDENT" })
   @Path("/{id}")
   @Operation(summary = "Delete an answer", description = "Removes an answer by its ID (soft delete)")
   @APIResponse(responseCode = "200", description = "Answer removed successfully")
+  @APIResponse(responseCode = "403", description = "Forbidden - not the owner")
   @APIResponse(responseCode = "404", description = "Answer not found")
   public Response deleteAnswer(
       @Parameter(description = "ID of the answer", required = true) @PathParam("id") @NotNull Long id) {
 
-    answerService.delete(id);
+    answerService.delete(id, securityIdentity);
 
     return Response.ok(
         ApiResponse.success("Answer deleted successfully")).build();
@@ -191,7 +199,7 @@ public class AnswerResource {
   }
 
   @POST
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER" })
+  @RolesAllowed({ "ADMIN", "STUDENT" })
   @Path("/{id}/mark-solution")
   @Operation(summary = "Mark answer as solution")
   @APIResponse(responseCode = "200", description = "Answer marked as solution successfully")
