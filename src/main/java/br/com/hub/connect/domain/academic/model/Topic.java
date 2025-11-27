@@ -1,5 +1,6 @@
 package br.com.hub.connect.domain.academic.model;
 
+import br.com.hub.connect.domain.academic.enums.TopicStatus;
 import br.com.hub.connect.domain.shared.model.BaseEntity;
 import br.com.hub.connect.domain.user.model.User;
 import io.quarkus.panache.common.Page;
@@ -12,9 +13,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import br.com.hub.connect.domain.academic.enums.TopicStatus;
 
 @Entity
 @Table(name = "topics")
@@ -43,6 +45,7 @@ public class Topic extends BaseEntity {
   public Integer countViews = 0;
 
   // Métodos Panache Active Record
+
   public static List<Topic> findAllActive(int page, int size) {
     return find("isActive = true", Sort.by("createdAt").descending())
         .page(Page.of(page, size))
@@ -74,6 +77,34 @@ public class Topic extends BaseEntity {
         .page(Page.of(page, size))
         .list();
   }
+
+  // --- MÉTODO NOVO ADICIONADO ---
+  public static List<Topic> findWithFilters(Long courseId, Long authorId, TopicStatus status, int page, int size) {
+    Map<String, Object> params = new HashMap<>();
+
+    // Inicia a query garantindo que só traga registros ativos
+    StringBuilder query = new StringBuilder("isActive = true");
+
+    if (courseId != null) {
+      query.append(" AND course.id = :courseId");
+      params.put("courseId", courseId);
+    }
+
+    if (authorId != null) {
+      query.append(" AND author.id = :authorId");
+      params.put("authorId", authorId);
+    }
+
+    if (status != null) {
+      query.append(" AND status = :status");
+      params.put("status", status);
+    }
+
+    return find(query.toString(), Sort.by("createdAt").descending(), params)
+        .page(Page.of(page, size))
+        .list();
+  }
+  // ------------------------------
 
   public static List<Topic> findByTitleContaining(String title) {
     return find("lower(title) like lower(?1) and isActive = true", "%" + title + "%").list();
