@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import br.com.hub.connect.application.academic.dto.topic.CreateTopicDTO;
-import br.com.hub.connect.application.academic.dto.topic.TopicResponseDTO;
 import br.com.hub.connect.application.academic.dto.topic.UpdateTopicDTO;
+import br.com.hub.connect.application.academic.dto.topic.TopicResponseDTO;
 import br.com.hub.connect.domain.academic.enums.TopicStatus;
 import br.com.hub.connect.domain.academic.model.Course;
 import br.com.hub.connect.domain.academic.model.Topic;
@@ -13,10 +13,12 @@ import br.com.hub.connect.domain.exception.CourseNotFoundException;
 import br.com.hub.connect.domain.exception.TopicNotFoundException;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
 import br.com.hub.connect.domain.user.model.User;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.ForbiddenException;
 
 @ApplicationScoped
 public class TopicService {
@@ -32,22 +34,18 @@ public class TopicService {
     Topic topic = Topic.findActiveById(id)
         .orElseThrow(() -> new TopicNotFoundException(id));
 
-    // Incrementa visualizações
-    topic.incrementViews();
-    topic.persist();
-
     return toResponseDTO(topic);
   }
 
   @Transactional
-  public TopicResponseDTO create(@Valid CreateTopicDTO dto) {
-    // Verifica se o curso existe
+  public TopicResponseDTO create(@Valid CreateTopicDTO dto, SecurityIdentity currentUser) {
+    Long authorId = getUserIdFromToken(currentUser);
+
     Course course = Course.findActiveById(dto.courseId())
         .orElseThrow(() -> new CourseNotFoundException(dto.courseId()));
 
-    // Verifica se o autor existe
-    User author = User.findActiveById(dto.authorId())
-        .orElseThrow(() -> new UserNotFoundException(dto.authorId()));
+    User author = User.findActiveById(authorId)
+        .orElseThrow(() -> new UserNotFoundException(authorId));
 
     Topic topic = new Topic();
     topic.title = dto.title();
@@ -58,15 +56,17 @@ public class TopicService {
     topic.countViews = 0;
 
     topic.persist();
+
     return toResponseDTO(topic);
   }
 
   @Transactional
-  public TopicResponseDTO update(@NotNull Long id, @Valid UpdateTopicDTO dto) {
+  public TopicResponseDTO update(@NotNull Long id, @Valid UpdateTopicDTO dto, SecurityIdentity currentUser) {
     Topic topic = Topic.findActiveById(id)
         .orElseThrow(() -> new TopicNotFoundException(id));
 
-    // Atualiza apenas campos não nulos
+    checkUpdatePermissionOrThrow(topic, currentUser);
+
     if (dto.title() != null) {
       topic.title = dto.title();
     }
@@ -82,16 +82,17 @@ public class TopicService {
   }
 
   @Transactional
-  public void delete(@NotNull Long id) {
+  public void delete(@NotNull Long id, SecurityIdentity currentUser) {
     Topic topic = Topic.findActiveById(id)
         .orElseThrow(() -> new TopicNotFoundException(id));
+
+    checkDeletePermissionOrThrow(topic, currentUser);
 
     topic.softDelete();
     topic.persist();
   }
 
   public List<TopicResponseDTO> findByCourse(Long courseId, int page, int size) {
-    // Verifica se o curso existe
     Course.findActiveById(courseId)
         .orElseThrow(() -> new CourseNotFoundException(courseId));
 
@@ -102,7 +103,6 @@ public class TopicService {
   }
 
   public List<TopicResponseDTO> findByAuthor(Long authorId, int page, int size) {
-    // Verifica se o autor existe
     User.findActiveById(authorId)
         .orElseThrow(() -> new UserNotFoundException(authorId));
 
@@ -112,23 +112,11 @@ public class TopicService {
         .collect(Collectors.toList());
   }
 
-  public List<TopicResponseDTO> findByStatus(TopicStatus status, int page, int size) {
-    return Topic.findByStatusActive(status, page, size)
+  public List<TopicResponseDTO> findWithFilters(Long courseId, Long authorId, TopicStatus status, int page, int size) {
+    return Topic.findWithFilters(courseId, authorId, status, page, size)
         .stream()
         .map(this::toResponseDTO)
         .collect(Collectors.toList());
-  }
-
-  public List<TopicResponseDTO> findWithFilters(Long courseId, Long authorId, TopicStatus status, int page, int size) {
-    if (courseId != null) {
-      return findByCourse(courseId, page, size);
-    } else if (authorId != null) {
-      return findByAuthor(authorId, page, size);
-    } else if (status != null) {
-      return findByStatus(status, page, size);
-    } else {
-      return findAll(page, size);
-    }
   }
 
   public long count() {
@@ -141,6 +129,35 @@ public class TopicService {
 
   public long countByAuthor(Long authorId) {
     return Topic.countByAuthor(authorId);
+  }
+
+  private Long getUserIdFromToken(SecurityIdentity currentUser) {
+    try {
+      return Long.parseLong(currentUser.getPrincipal().getName());
+    } catch (NumberFormatException e) {
+      throw new ForbiddenException("Invalid user principal in token.");
+    }
+  }
+
+  private void checkUpdatePermissionOrThrow(Topic topic, SecurityIdentity currentUser) {
+    Long requestingUserId = getUserIdFromToken(currentUser);
+    boolean isOwner = topic.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+
+    if (!isOwner && !hasAdminRole) {
+      throw new ForbiddenException("You do not have permission to update this topic.");
+    }
+  }
+
+  private void checkDeletePermissionOrThrow(Topic topic, SecurityIdentity currentUser) {
+    Long requestingUserId = getUserIdFromToken(currentUser);
+    boolean isOwner = topic.author.id.equals(requestingUserId);
+    boolean hasAdminRole = currentUser.hasRole("ADMIN");
+    boolean hasCoordinatorRole = currentUser.hasRole("COORDINATOR");
+
+    if (!isOwner && !hasAdminRole && !hasCoordinatorRole) {
+      throw new ForbiddenException("You do not have permission to delete this topic.");
+    }
   }
 
   private TopicResponseDTO toResponseDTO(Topic topic) {

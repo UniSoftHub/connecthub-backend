@@ -16,6 +16,7 @@ import br.com.hub.connect.application.utils.ApiResponse;
 import br.com.hub.connect.application.utils.CountResponse;
 import br.com.hub.connect.domain.exception.PageNotFoundException;
 import br.com.hub.connect.domain.academic.enums.TopicStatus;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
@@ -42,6 +44,9 @@ public class TopicResource {
 
   @Inject
   TopicService topicService;
+
+  @Context
+  SecurityIdentity securityIdentity;
 
   @GET
   @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "STUDENT" })
@@ -90,10 +95,10 @@ public class TopicResource {
   @Operation(summary = "Create a new topic")
   @APIResponse(responseCode = "201", description = "Topic created successfully")
   @APIResponse(responseCode = "400", description = "Invalid data")
-  @APIResponse(responseCode = "404", description = "Course or author not found")
+  @APIResponse(responseCode = "404", description = "Course not found")
   public Response createTopic(@Valid CreateTopicDTO dto) {
 
-    TopicResponseDTO createdTopic = topicService.create(dto);
+    TopicResponseDTO createdTopic = topicService.create(dto, securityIdentity);
 
     return Response.status(Response.Status.CREATED)
         .entity(ApiResponse.success("Topic created successfully", createdTopic))
@@ -103,31 +108,33 @@ public class TopicResource {
   }
 
   @PATCH
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "AUTHOR" })
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "STUDENT" })
   @Path("/{id}")
   @Operation(summary = "Update an existing topic")
   @APIResponse(responseCode = "200", description = "Topic updated successfully")
+  @APIResponse(responseCode = "403", description = "Forbidden - not the owner")
   @APIResponse(responseCode = "404", description = "Topic not found")
   public Response updateTopic(
       @Parameter(description = "ID of the topic", required = true) @PathParam("id") @NotNull Long id,
       @Valid UpdateTopicDTO dto) {
 
-    TopicResponseDTO updatedTopic = topicService.update(id, dto);
+    TopicResponseDTO updatedTopic = topicService.update(id, dto, securityIdentity);
 
     return Response.ok(
         ApiResponse.success("Topic updated successfully", updatedTopic)).build();
   }
 
   @DELETE
-  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "AUTHOR" })
+  @RolesAllowed({ "ADMIN", "COORDINATOR", "TEACHER", "STUDENT" })
   @Path("/{id}")
   @Operation(summary = "Delete a topic", description = "Removes a topic by its ID (soft delete)")
   @APIResponse(responseCode = "200", description = "Topic removed successfully")
+  @APIResponse(responseCode = "403", description = "Forbidden - not the owner")
   @APIResponse(responseCode = "404", description = "Topic not found")
   public Response deleteTopic(
       @Parameter(description = "ID of the topic", required = true) @PathParam("id") @NotNull Long id) {
 
-    topicService.delete(id);
+    topicService.delete(id, securityIdentity);
 
     return Response.ok(
         ApiResponse.success("Topic deleted successfully")).build();
