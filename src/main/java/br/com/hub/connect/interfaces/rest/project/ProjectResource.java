@@ -12,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -30,9 +31,9 @@ import br.com.hub.connect.application.project.project.dto.ProjectListResponseDTO
 import br.com.hub.connect.application.project.project.dto.UpdateProjectDTO;
 import br.com.hub.connect.application.project.project.dto.ProjectResponseDTO;
 import br.com.hub.connect.application.utils.ApiResponse;
+import br.com.hub.connect.application.utils.CountResponse;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
-import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 
 @Path("/api/projects")
@@ -48,6 +49,7 @@ public class ProjectResource {
   SecurityIdentity securityIdentity;
 
   @GET
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Operation(summary = "List all active projects", description = "Returns a paged list of active projects")
   @APIResponse(responseCode = "200", description = "List of projects returned successfully")
   public Response getAllProjects(
@@ -76,6 +78,7 @@ public class ProjectResource {
   }
 
   @GET
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/{id}")
   @Operation(summary = "Find project by ID")
   @APIResponse(responseCode = "200", description = "Project found")
@@ -88,8 +91,8 @@ public class ProjectResource {
         ApiResponse.success("Project found", project)).build();
   }
 
-  @Authenticated
   @POST
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Operation(summary = "Create a new project")
   @APIResponse(responseCode = "201", description = "Project created successfully")
   @APIResponse(responseCode = "400", description = "Invalid data")
@@ -104,8 +107,8 @@ public class ProjectResource {
         .build();
   }
 
-  @Authenticated
   @PATCH
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/{id}")
   @Operation(summary = "Update an existing project")
   @APIResponse(responseCode = "200", description = "Project updated successfully")
@@ -119,8 +122,8 @@ public class ProjectResource {
         ApiResponse.success("Project updated successfully", updatedProject)).build();
   }
 
-  @Authenticated
   @DELETE
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/{id}")
   @Operation(summary = "Delete a project", description = "Removes a project by its ID (soft delete)")
   @APIResponse(responseCode = "204", description = "Project removed successfully")
@@ -134,6 +137,7 @@ public class ProjectResource {
   }
 
   @GET
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/health")
   @Operation(summary = "Health check", description = "Returns the health status of the Project service")
   @APIResponse(responseCode = "200", description = "Service is healthy")
@@ -142,18 +146,19 @@ public class ProjectResource {
   }
 
   @GET
+  @RolesAllowed({ "STUDENT", "ADMIN", "COORDINATOR", "TEACHER" })
   @Path("/count")
   @Operation(summary = "Count active projects", description = "Returns the total number of active projects")
   @APIResponse(responseCode = "200", description = "Total number of active projects returned successfully")
   public Response countActiveProjects() {
-    long count = projectService.count();
+    long count = getActiveProjectsCount();
     CountResponse countResponse = new CountResponse(count);
     return Response.ok(
         ApiResponse.success("Active projects count retrieved", countResponse)).build();
   }
 
-  public record CountResponse(long count) {
-
+  private long getActiveProjectsCount() {
+    return projectService.count();
   }
 
 }

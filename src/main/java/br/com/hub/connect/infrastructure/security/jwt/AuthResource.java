@@ -1,5 +1,6 @@
 package br.com.hub.connect.infrastructure.security.jwt;
 
+import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.domain.exception.EmailAlreadyExistsException;
 import br.com.hub.connect.domain.exception.InvalidCredentialsException;
 import br.com.hub.connect.domain.user.enums.UserRole;
@@ -83,30 +84,28 @@ public class AuthResource {
   public static class LoginResponse {
     public String token;
     public String refreshToken;
-    public UserInfo user;
+    public UserResponseDTO user;
 
     public LoginResponse(String token, String refreshToken, User user) {
       this.token = token;
       this.refreshToken = refreshToken;
-      this.user = new UserInfo(user);
+      this.user = toResponseDTO(user);
     }
   }
 
-  public static class UserInfo {
-    public Long id;
-    public String name;
-    public String email;
-    public String role;
-    public Double xp;
-    public Integer level;
-
-    public UserInfo(User user) {
-      this.id = user.id;
-      this.name = user.name;
-      this.email = user.email;
-      this.role = user.role.name();
-      this.xp = user.xp;
-      this.level = user.level;
-    }
+  private static UserResponseDTO toResponseDTO(User user) {
+    return new UserResponseDTO(
+        user.id,
+        user.name,
+        user.email,
+        user.role,
+        user.enrollmentId,
+        user.CPF,
+        user.phone,
+        user.xp,
+        user.level,
+        user.avatarUrl,
+        user.isActive,
+        user.createdAt);
   }
 }

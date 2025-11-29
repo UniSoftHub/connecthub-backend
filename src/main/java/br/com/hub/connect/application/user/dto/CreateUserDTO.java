@@ -12,7 +12,7 @@ public record CreateUserDTO(
 
     @NotBlank(message = "Password is required") @Size(min = 6, message = "Password must be at least 6 characters") String password,
 
-    @Size(min = 11, max = 14, message = "CPF must be between 11 and 14 characters") String CPF,
+    String CPF,
 
     Long enrollmentId,
 

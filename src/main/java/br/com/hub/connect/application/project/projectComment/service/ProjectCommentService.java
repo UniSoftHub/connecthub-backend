@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCommentDTO;
+import br.com.hub.connect.application.user.dto.UserResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.CreateProjectCommentDTO;
 import br.com.hub.connect.domain.exception.ProjectCommentNotFoundException;
 import br.com.hub.connect.domain.exception.UserNotFoundException;
@@ -217,8 +218,24 @@ public class ProjectCommentService {
     return new ProjectCommentResponseDTO(
         comment.id,
         comment.text,
-        comment.author.id,
+        toUserResponse(comment.author),
         comment.createdAt,
         comment.project.id);
+  }
+
+  private UserResponseDTO toUserResponse(User user) {
+    return new UserResponseDTO(
+        user.id,
+        user.name,
+        user.email,
+        user.role,
+        user.enrollmentId,
+        user.CPF,
+        user.phone,
+        user.xp,
+        user.level,
+        user.avatarUrl,
+        user.isActive,
+        user.createdAt);
   }
 }

@@ -33,6 +33,7 @@ import br.com.hub.connect.application.project.projectComment.dto.UpdateProjectCo
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentResponseDTO;
 import br.com.hub.connect.application.project.projectComment.dto.ProjectCommentListResponseDTO;
 import br.com.hub.connect.application.utils.ApiResponse;
+import br.com.hub.connect.application.utils.CountResponse;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -40,7 +41,6 @@ import io.quarkus.security.identity.SecurityIdentity;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Project Comments", description = "Operations about project comments")
-
 public class ProjectCommentResource {
 
   @Inject
@@ -161,13 +161,14 @@ public class ProjectCommentResource {
   @APIResponse(responseCode = "200", description = "Total number of active project comments per project returned successfully")
   public Response countActiveComments(
       @Parameter(description = "ID of the project", required = true) @PathParam("projectId") @NotNull Long projectId) {
-    long count = projectCommentService.countByProjectId(projectId);
+    long count = getActiveProjectsCount(projectId);
     CountResponse countResponse = new CountResponse(count);
     return Response.ok(
         ApiResponse.success("Comment count retrieved", countResponse)).build();
   }
 
-  public record CountResponse(Long count) {
-
+  public long getActiveProjectsCount(long projectId) {
+    return projectCommentService.countByProjectId(projectId);
   }
+
 }

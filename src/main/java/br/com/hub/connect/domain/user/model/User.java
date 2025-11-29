@@ -34,7 +34,6 @@ public class User extends BaseEntity {
   @Column(nullable = false)
   public String password;
 
-  @Column(unique = true)
   public String CPF;
 
   public String phone;
